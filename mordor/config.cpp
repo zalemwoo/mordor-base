@@ -433,7 +433,6 @@ Timer::ptr associateTimerWithConfigVar(TimerManager &timerManager,
             &updateTimer, _1, result.get()).track(result));
     return result;
 }
-#endif // Ze
 
 static bool verifyThreadCount(int value)
 {
@@ -447,7 +446,6 @@ static void updateThreadCount(int value, Scheduler &scheduler)
     scheduler.threadCount(value);
 }
 
-#if 0 // Zs
 void associateSchedulerWithConfigVar(Scheduler &scheduler,
     ConfigVar<int>::ptr configVar)
 {
