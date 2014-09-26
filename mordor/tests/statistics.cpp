@@ -1,5 +1,6 @@
 #include "mordor/statistics.h"
 #include "mordor/test/test.h"
+#include "mordor/type_name.h"
 
 using namespace Mordor;
 
@@ -10,7 +11,7 @@ MORDOR_UNITTEST(Statistics, dumpStat)
     std::ostringstream os;
     sumStat.dump(os);
     std::ostringstream expectedOS;
-    expectedOS << typeid(sumStat).name() << ": "
+    expectedOS << type_name(sumStat) << ": "
         << sumStat << " s" << std::endl;
     MORDOR_TEST_ASSERT_EQUAL(os.str(), expectedOS.str());
 }
