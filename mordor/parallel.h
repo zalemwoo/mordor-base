@@ -5,9 +5,6 @@
 #include <vector>
 #include <mutex>
 
-#include <boost/bind.hpp>
-#include <boost/function.hpp>
-
 #include "atomic.h"
 #include "fiber.h"
 #include "log.h"
@@ -38,14 +35,14 @@ namespace Mordor {
 ///        scheduled into Scheduler with later dgs not invoked until earlier
 ///        dgs have completed.
 void
-parallel_do(const std::vector<boost::function<void ()> > &dgs, int parallelism = -1);
+parallel_do(const std::vector<std::function<void ()> > &dgs, int parallelism = -1);
 /// @ingroup parallel_do
 /// @param dgs The functors to execute
 /// @param fibers The Fibers to use to execute the functors
 /// @param parallelism How many @p fibers could be executed in parallel at most
 /// @pre dgs.size() <= fibers.size()
 void
-parallel_do(const std::vector<boost::function<void ()> > &dgs,
+parallel_do(const std::vector<std::function<void ()> > &dgs,
             std::vector<Fiber::ptr> &fibers,
             int parallelism = -1);
 
@@ -127,11 +124,11 @@ parallel_foreach(Iterator begin, Iterator end, Functor functor,
         << parallelism << " fibers";
     int count = parallelism;
     for (int i = 0; i < parallelism; ++i) {
-        scheduler->schedule(boost::bind(
+        scheduler->schedule(std::bind(
             &Detail::parallel_foreach_impl<Iterator, Functor>,
-            boost::ref(begin), boost::ref(end), boost::ref(functor),
-            boost::ref(mutex), boost::ref(exception), scheduler,
-            Fiber::getThis(), boost::ref(count)));
+            std::ref(begin), std::ref(end), std::ref(functor),
+            std::ref(mutex), std::ref(exception), scheduler,
+            Fiber::getThis(), std::ref(count)));
     }
     Scheduler::yieldTo();
 

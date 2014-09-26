@@ -21,7 +21,7 @@ boost::signals2::signal<void ()> onContinue;
         return os << #ctrl;         \
 
 #ifdef WINDOWS
-static boost::function<int (int, char **)> g_daemonMain;
+static std::function<int (int, char **)> g_daemonMain;
 
 namespace {
 struct ServiceStatus
@@ -205,7 +205,7 @@ static BOOL WINAPI HandlerRoutine(DWORD dwCtrlType)
 }
 
 int run(int argc, char **argv,
-    boost::function<int (int, char **)> daemonMain, bool)
+    std::function<int (int, char **)> daemonMain, bool)
 {
     SERVICE_TABLE_ENTRYW ServiceStartTable[] = {
         { L"", &ServiceMain },
@@ -232,7 +232,7 @@ int run(int argc, char **argv,
 #include <errno.h>
 #include <signal.h>
 #include <sys/wait.h>
-boost::function<bool (pid_t, int)> onChildProcessExit;
+std::function<bool (pid_t, int)> onChildProcessExit;
 
 static sigset_t blockedSignals()
 {
@@ -367,7 +367,7 @@ static bool shouldDaemonizeDueToParent()
 
 // running user specified main
 static int startMain(int argc, char** argv,
-        boost::function<int (int, char**)> userMain)
+        std::function<int (int, char**)> userMain)
 {
     // Mask signals from other threads so we can handle them ourselves
     sigset_t mask = blockedSignals();
@@ -391,7 +391,7 @@ static int startMain(int argc, char** argv,
 // start main in a forked process and monitor it, restart it in case
 // it dies abnormally.
 static int watchdog(int argc, char** argv,
-        boost::function<int (int, char**)> userMain)
+        std::function<int (int, char**)> userMain)
 {
     for (;;) {
         pid_t pid = fork();
@@ -429,7 +429,7 @@ static int watchdog(int argc, char** argv,
 }
 
 int run(int argc, char **argv,
-    boost::function<int (int, char **)> daemonMain,
+    std::function<int (int, char **)> daemonMain,
     bool enableWatchdog)
 {
 #ifndef OSX

@@ -240,9 +240,9 @@ void
 SSLStream::close(CloseType type)
 {
     MORDOR_ASSERT(type == BOTH);
-    if (!(sslCallWithLock(boost::bind(SSL_get_shutdown, m_ssl.get()), NULL) & SSL_SENT_SHUTDOWN)) {
+    if (!(sslCallWithLock(std::bind(SSL_get_shutdown, m_ssl.get()), NULL) & SSL_SENT_SHUTDOWN)) {
         unsigned long error = SSL_ERROR_NONE;
-        const int result = sslCallWithLock(boost::bind(SSL_shutdown, m_ssl.get()), &error);
+        const int result = sslCallWithLock(std::bind(SSL_shutdown, m_ssl.get()), &error);
         if (result <= 0) {
             MORDOR_LOG_DEBUG(g_log) << this << " SSL_shutdown(" << m_ssl.get()
                 << "): " << result << " (" << error << ")";
@@ -288,9 +288,9 @@ SSLStream::close(CloseType type)
         flush(false);
     }
 
-    while (!(sslCallWithLock(boost::bind(SSL_get_shutdown, m_ssl.get()), NULL) & SSL_RECEIVED_SHUTDOWN)) {
+    while (!(sslCallWithLock(std::bind(SSL_get_shutdown, m_ssl.get()), NULL) & SSL_RECEIVED_SHUTDOWN)) {
         unsigned long error = SSL_ERROR_NONE;
-        const int result = sslCallWithLock(boost::bind(SSL_shutdown, m_ssl.get()), &error);
+        const int result = sslCallWithLock(std::bind(SSL_shutdown, m_ssl.get()), &error);
         MORDOR_LOG_DEBUG(g_log) << this << " SSL_shutdown(" << m_ssl.get()
             << "): " << result << " (" << error << ")";
         if (result > 0) {
@@ -348,7 +348,7 @@ SSLStream::read(void *buffer, size_t length)
     const int toRead = (int)std::min<size_t>(0x0fffffff, length);
     while (true) {
         unsigned long error = SSL_ERROR_NONE;
-        const int result = sslCallWithLock(boost::bind(SSL_read, m_ssl.get(), buffer, toRead), &error);
+        const int result = sslCallWithLock(std::bind(SSL_read, m_ssl.get(), buffer, toRead), &error);
         if (result > 0) {
             return result;
         }
@@ -424,7 +424,7 @@ SSLStream::write(const void *buffer, size_t length)
     const int toWrite = (int)std::min<size_t>(0x7fffffff, length);
     while (true) {
         unsigned long error = SSL_ERROR_NONE;
-        const int result = sslCallWithLock(boost::bind(SSL_write, m_ssl.get(), buffer, toWrite), &error);
+        const int result = sslCallWithLock(std::bind(SSL_write, m_ssl.get(), buffer, toWrite), &error);
         if (result > 0) {
             return result;
         }
@@ -513,7 +513,7 @@ SSLStream::accept()
 {
     while (true) {
         unsigned long error = SSL_ERROR_NONE;
-        const int result = sslCallWithLock(boost::bind(SSL_accept, m_ssl.get()), &error);
+        const int result = sslCallWithLock(std::bind(SSL_accept, m_ssl.get()), &error);
         if (result > 0) {
             flush(false);
             return;
@@ -573,7 +573,7 @@ SSLStream::connect()
 {
     while (true) {
         unsigned long error = SSL_ERROR_NONE;
-        const int result = sslCallWithLock(boost::bind(SSL_connect, m_ssl.get()), &error);
+        const int result = sslCallWithLock(std::bind(SSL_connect, m_ssl.get()), &error);
         MORDOR_LOG_DEBUG(g_log) << this << " SSL_connect(" << m_ssl.get()
             << "): " << result << " (" << error << ")";
         if (result > 0) {
@@ -649,7 +649,7 @@ SSLStream::serverNameIndication(const std::string &hostname)
 void
 SSLStream::verifyPeerCertificate()
 {
-    const long verifyResult = sslCallWithLock(boost::bind(SSL_get_verify_result, m_ssl.get()), NULL);
+    const long verifyResult = sslCallWithLock(std::bind(SSL_get_verify_result, m_ssl.get()), NULL);
     MORDOR_LOG_LEVEL(g_log, verifyResult ? Log::WARNING : Log::DEBUG) << this
         << " SSL_get_verify_result(" << m_ssl.get() << "): "
         << verifyResult;
@@ -748,7 +748,7 @@ SSLStream::wantRead()
 }
 
 int
-SSLStream::sslCallWithLock(boost::function<int ()> dg, unsigned long *error)
+SSLStream::sslCallWithLock(std::function<int ()> dg, unsigned long *error)
 {
     std::lock_guard<std::mutex> lock(m_mutex);
 

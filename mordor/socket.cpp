@@ -2,8 +2,6 @@
 
 #include "socket.h"
 
-#include <boost/bind.hpp>
-
 #include "assert.h"
 #include "fiber.h"
 #include "iomanager.h"
@@ -419,7 +417,7 @@ Socket::connect(const Address &to)
                 }
                 Timer::ptr timeout;
                 if (m_sendTimeout != ~0ull)
-                    timeout = m_ioManager->registerTimer(m_sendTimeout, boost::bind(
+                    timeout = m_ioManager->registerTimer(m_sendTimeout, std::bind(
                         &IOManager::cancelEvent, m_ioManager, (HANDLE)m_sock, &m_sendEvent));
                 Scheduler::yieldTo();
 
@@ -471,8 +469,8 @@ suckylsp:
                 Timer::ptr timeout;
                 if (m_sendTimeout != ~0ull)
                     timeout = m_ioManager->registerConditionTimer(m_sendTimeout,
-                        boost::bind(&Socket::cancelIo, this,
-                            boost::ref(m_cancelledSend), WSAETIMEDOUT),
+                        std::bind(&Socket::cancelIo, this,
+                            std::ref(m_cancelledSend), WSAETIMEDOUT),
                         weak_ptr(shared_from_this()));
                 Scheduler::yieldTo();
 
@@ -527,8 +525,8 @@ suckylsp:
             Timer::ptr timeout;
             if (m_sendTimeout != ~0ull)
                 timeout = m_ioManager->registerConditionTimer(m_sendTimeout,
-                    boost::bind(&Socket::cancelIo, this, IOManager::WRITE,
-                        boost::ref(m_cancelledSend), ETIMEDOUT),
+                    std::bind(&Socket::cancelIo, this, IOManager::WRITE,
+                        std::ref(m_cancelledSend), ETIMEDOUT),
                     weak_ptr(shared_from_this()));
             Scheduler::yieldTo();
             if (timeout)
@@ -635,7 +633,7 @@ Socket::accept(Socket &target)
                 }
                 Timer::ptr timeout;
                 if (m_receiveTimeout != ~0ull)
-                    timeout = m_ioManager->registerTimer(m_receiveTimeout, boost::bind(
+                    timeout = m_ioManager->registerTimer(m_receiveTimeout, std::bind(
                         &IOManager::cancelEvent, m_ioManager, (HANDLE)m_sock, &m_receiveEvent));
                 Scheduler::yieldTo();
                 if (timeout)
@@ -697,8 +695,8 @@ suckylsp:
                 Timer::ptr timeout;
                 if (m_receiveTimeout != ~0ull)
                     timeout = m_ioManager->registerConditionTimer(m_sendTimeout,
-                        boost::bind(&Socket::cancelIo, this,
-                            boost::ref(m_cancelledReceive), WSAETIMEDOUT),
+                        std::bind(&Socket::cancelIo, this,
+                            std::ref(m_cancelledReceive), WSAETIMEDOUT),
                         weak_ptr(shared_from_this()));
                 Scheduler::yieldTo();
                 m_fiber.reset();
@@ -760,8 +758,8 @@ suckylsp:
             Timer::ptr timeout;
             if (m_receiveTimeout != ~0ull)
                 timeout = m_ioManager->registerConditionTimer(m_receiveTimeout,
-                    boost::bind(&Socket::cancelIo, this, IOManager::READ,
-                        boost::ref(m_cancelledReceive), ETIMEDOUT),
+                    std::bind(&Socket::cancelIo, this, IOManager::READ,
+                        std::ref(m_cancelledReceive), ETIMEDOUT),
                     weak_ptr(shared_from_this()));
             Scheduler::yieldTo();
             if (timeout)
@@ -918,7 +916,7 @@ Socket::doIO(iovec *buffers, size_t length, int &flags, Address *address)
         } else {
             Timer::ptr timer;
             if (timeout != ~0ull)
-                timer = m_ioManager->registerTimer(timeout, boost::bind(
+                timer = m_ioManager->registerTimer(timeout, std::bind(
                     &IOManager::cancelEvent, m_ioManager, (HANDLE)m_sock,
                     &event));
             Scheduler::yieldTo();
@@ -967,7 +965,7 @@ Socket::doIO(iovec *buffers, size_t length, int &flags, Address *address)
         Timer::ptr timer;
         if (timeout != ~0ull)
             timer = m_ioManager->registerConditionTimer(timeout,
-                boost::bind(&Socket::cancelIo, this, event, boost::ref(cancelled), ETIMEDOUT),
+                std::bind(&Socket::cancelIo, this, event, std::ref(cancelled), ETIMEDOUT),
                 weak_ptr(shared_from_this()));
         Scheduler::yieldTo();
         if (timer)
@@ -1308,11 +1306,11 @@ Socket::registerForRemoteClose()
         MORDOR_THROW_EXCEPTION_FROM_LAST_ERROR_API("ResetEvent");
     if (WSAEventSelect(m_sock, m_hEvent, FD_CLOSE))
         MORDOR_THROW_EXCEPTION_FROM_LAST_ERROR_API("WSAEventSelect");
-    m_ioManager->registerEvent(m_hEvent, boost::bind(&Socket::callOnRemoteClose,
+    m_ioManager->registerEvent(m_hEvent, std::bind(&Socket::callOnRemoteClose,
         weak_ptr(shared_from_this())));
 #else
     m_ioManager->registerEvent(m_sock, IOManager::CLOSE,
-        boost::bind(&Socket::callOnRemoteClose, weak_ptr(shared_from_this())));
+        std::bind(&Socket::callOnRemoteClose, weak_ptr(shared_from_this())));
 #endif
     m_isRegisteredForRemoteClose = true;
 }

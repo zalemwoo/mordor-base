@@ -4,8 +4,6 @@
 #include <list>
 #include <vector>
 
-#include <boost/function.hpp>
-
 #include "mordor/socket.h"
 
 namespace Mordor {
@@ -109,7 +107,7 @@ public:
         bool includeDelimiter = true);
     std::string getDelimited(const std::string &delimiter,
         bool eofIsDelimiter = true, bool includeDelimiter = true);
-    void visit(boost::function<void (const void *, size_t)> dg, size_t length = ~0) const;
+    void visit(std::function<void (const void *, size_t)> dg, size_t length = ~0) const;
 
     bool operator== (const Buffer &rhs) const;
     bool operator!= (const Buffer &rhs) const;

@@ -2,8 +2,6 @@
 
 #include "scheduler.h"
 
-#include <boost/bind.hpp>
-
 #include "atomic.h"
 #include "assert.h"
 #include "fiber.h"
@@ -27,7 +25,7 @@ Scheduler::Scheduler(size_t threads, bool useCaller, size_t batchSize)
         --threads;
         MORDOR_ASSERT(getThis() == NULL);
         t_scheduler = this;
-        m_rootFiber.reset(new Fiber(boost::bind(&Scheduler::run, this)));
+        m_rootFiber.reset(new Fiber(std::bind(&Scheduler::run, this)));
         t_scheduler = this;
         t_fiber = m_rootFiber.get();
         m_rootThread = gettid();
@@ -68,7 +66,7 @@ Scheduler::start()
     m_threads.resize(m_threadCount);
     for (size_t i = 0; i < m_threadCount; ++i) {
         m_threads[i] = std::shared_ptr<Thread>(new Thread(
-            boost::bind(&Scheduler::run, this)));
+            std::bind(&Scheduler::run, this)));
     }
 }
 
@@ -216,7 +214,7 @@ Scheduler::threadCount(size_t threads)
         m_threads.resize(threads);
         for (size_t i = m_threadCount; i < threads; ++i)
             m_threads[i] = std::shared_ptr<Thread>(new Thread(
-            boost::bind(&Scheduler::run, this)));
+            std::bind(&Scheduler::run, this)));
     }
     m_threadCount = threads;
 }
@@ -231,7 +229,7 @@ Scheduler::yieldTo(bool yieldToCallerOnTerminate)
     if (t_fiber->state() != Fiber::HOLD) {
         m_stopping = m_autoStop || m_stopping;
         // XXX: is t_fiber the hijacked thread ?
-        t_fiber->reset(boost::bind(&Scheduler::run, this));
+        t_fiber->reset(std::bind(&Scheduler::run, this));
     }
     t_fiber->yieldTo(yieldToCallerOnTerminate);
 }
@@ -247,7 +245,7 @@ Scheduler::run()
         // Hijacked a thread
         MORDOR_ASSERT(t_fiber.get() == Fiber::getThis().get());
     }
-    Fiber::ptr idleFiber(new Fiber(boost::bind(&Scheduler::idle, this)));
+    Fiber::ptr idleFiber(new Fiber(std::bind(&Scheduler::idle, this)));
     MORDOR_LOG_VERBOSE(g_log) << this << " starting thread with idle fiber " << idleFiber;
     Fiber::ptr dgFiber;
     // use a vector for O(1) .size()
@@ -363,7 +361,7 @@ Scheduler::run()
         while (!batch.empty()) {
             FiberAndThread& ft = batch.back();
             Fiber::ptr f = ft.fiber;
-            boost::function<void ()> dg = ft.dg;
+            std::function<void ()> dg = ft.dg;
             batch.pop_back();
 
             try {
@@ -375,7 +373,7 @@ Scheduler::run()
                         dgFiber->reset(dg);
                     else
                         dgFiber.reset(new Fiber(dg));
-                    MORDOR_LOG_DEBUG(g_log) << this << " running " << dg;
+                    // MORDOR_LOG_DEBUG(g_log) << this << " running " << dg; // Z
                     dg = NULL;
                     dgFiber->yieldTo();
                     if (dgFiber->state() != Fiber::TERM)

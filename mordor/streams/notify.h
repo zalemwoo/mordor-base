@@ -2,8 +2,6 @@
 #define __MORDOR_NOTIFY_STREAM_H__
 // Copyright (c) 2009 - Mozy, Inc.
 
-#include <boost/function.hpp>
-
 #include "filter.h"
 
 namespace Mordor {
@@ -17,9 +15,9 @@ public:
         : FilterStream(parent, own)
     {}
 
-    boost::function<void ()> notifyOnFlush;
-    boost::function<void ()> notifyOnEof;
-    boost::function<void ()> notifyOnException;
+    std::function<void ()> notifyOnFlush;
+    std::function<void ()> notifyOnEof;
+    std::function<void ()> notifyOnException;
 
     void close(CloseType type = BOTH)
     {
@@ -76,23 +74,23 @@ public:
             notifyOnFlush();
     }
 
-    void notifyOnClose(boost::function<void ()> dg = NULL)
+    void notifyOnClose(std::function<void ()> dg = NULL)
     {
         if (dg)
-            notifyOnClose2(boost::bind(&NotifyStream::onCloseAdapter, dg, _1));
+            notifyOnClose2(std::bind(&NotifyStream::onCloseAdapter, dg, std::placeholders::_1));
         else
             notifyOnClose2(NULL);
     }
 
-    void notifyOnClose2(boost::function<void (CloseType)> dg)
+    void notifyOnClose2(std::function<void (CloseType)> dg)
     { m_notifyOnClose = dg; }
 
 private:
-    static void onCloseAdapter(boost::function<void ()> dg, CloseType type)
+    static void onCloseAdapter(std::function<void ()> dg, CloseType type)
     { dg(); }
 
 private:
-    boost::function<void (CloseType)> m_notifyOnClose;
+    std::function<void (CloseType)> m_notifyOnClose;
 
 };
 

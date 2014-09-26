@@ -58,7 +58,7 @@ TimeoutHandler::setTimeout(unsigned long long timeout, TimeoutDg dg)
             // OR auto start is set
             if (m_lastTimedOut == TIMING || m_autoStart) {
                 m_timer = m_timerManager.registerTimer(timeout,
-                        boost::bind(&TimeoutHandler::onTimeout, this));
+                        std::bind(&TimeoutHandler::onTimeout, this));
             }
         }
     }
@@ -74,7 +74,7 @@ TimeoutHandler::startTimer()
     m_lastTimedOut = TIMING;
     if (isTimeoutSet())
         m_timer = m_timerManager.registerTimer(m_timeout,
-            boost::bind(&TimeoutHandler::onTimeout, this));
+            std::bind(&TimeoutHandler::onTimeout, this));
 }
 
 bool
@@ -106,21 +106,21 @@ void
 TimeoutStream::readTimeout(unsigned long long readTimeout)
 {
     FiberMutex::ScopedLock lock(m_mutex);
-    m_reader.setTimeout(readTimeout, boost::bind(&cancelReadLocal, parent()));
+    m_reader.setTimeout(readTimeout, std::bind(&cancelReadLocal, parent()));
 }
 
 void
 TimeoutStream::writeTimeout(unsigned long long writeTimeout)
 {
     FiberMutex::ScopedLock lock(m_mutex);
-    m_writer.setTimeout(writeTimeout, boost::bind(&cancelWriteLocal, parent()));
+    m_writer.setTimeout(writeTimeout, std::bind(&cancelWriteLocal, parent()));
 }
 
 void
 TimeoutStream::idleTimeout(unsigned long long idleTimeout)
 {
     FiberMutex::ScopedLock lock(m_mutex);
-    m_idler.setTimeout(idleTimeout, boost::bind(&cancelReadWriteLocal, parent()));
+    m_idler.setTimeout(idleTimeout, std::bind(&cancelReadWriteLocal, parent()));
 }
 
 size_t

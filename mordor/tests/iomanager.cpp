@@ -1,7 +1,5 @@
 // Copyright (c) 2009 - Mozy, Inc.
 
-#include <boost/bind.hpp>
-
 #include "mordor/future.h"
 #include "mordor/iomanager.h"
 #include "mordor/test/test.h"
@@ -43,7 +41,7 @@ namespace
         EmptyTimeClass::ptr tester(new EmptyTimeClass());
         tester->setFuture(&future);
         MORDOR_TEST_ASSERT(tester.unique());
-        manager.registerTimer(1000, boost::bind(&EmptyTimeClass::onTimer, tester));
+        manager.registerTimer(1000, std::bind(&EmptyTimeClass::onTimer, tester));
         MORDOR_TEST_ASSERT(!tester.unique());
         // wait until timed out
         future.wait();
@@ -56,7 +54,7 @@ namespace
         EmptyTimeClass::ptr tester(new EmptyTimeClass());
         MORDOR_TEST_ASSERT(tester.unique());
         Timer::ptr timer = manager.registerTimer(30000000,
-            boost::bind(&EmptyTimeClass::onTimer, tester));
+            std::bind(&EmptyTimeClass::onTimer, tester));
         MORDOR_TEST_ASSERT(!tester.unique());
         timer->cancel();
         MORDOR_TEST_ASSERT(!tester->timedOut());
@@ -75,7 +73,7 @@ MORDOR_UNITTEST(IOManager, singleTimer)
 {
     int sequence = 0;
     IOManager manager;
-    manager.registerTimer(0, boost::bind(&singleTimer, boost::ref(sequence), 1));
+    manager.registerTimer(0, std::bind(&singleTimer, std::ref(sequence), 1));
     MORDOR_TEST_ASSERT_EQUAL(sequence, 0);
     manager.dispatch();
     ++sequence;
@@ -86,7 +84,7 @@ MORDOR_UNITTEST(IOManager, laterTimer)
 {
     int sequence = 0;
     IOManager manager;
-    manager.registerTimer(100000, boost::bind(&singleTimer, boost::ref(sequence), 1));
+    manager.registerTimer(100000, std::bind(&singleTimer, std::ref(sequence), 1));
     MORDOR_TEST_ASSERT_EQUAL(sequence, 0);
     manager.dispatch();
     ++sequence;
@@ -96,14 +94,14 @@ MORDOR_UNITTEST(IOManager, laterTimer)
 MORDOR_UNITTEST(IOManager, timerRefCountNoExpired)
 {
     IOManager manager;
-    manager.schedule(boost::bind(testTimerNoExpire, boost::ref(manager)));
+    manager.schedule(std::bind(testTimerNoExpire, std::ref(manager)));
     manager.dispatch();
 }
 
 MORDOR_UNITTEST(IOManager, timerRefCountExpired)
 {
     IOManager manager;
-    manager.schedule(boost::bind(testTimerExpired, boost::ref(manager)));
+    manager.schedule(std::bind(testTimerExpired, std::ref(manager)));
     manager.dispatch();
 }
 
@@ -159,14 +157,14 @@ MORDOR_UNITTEST(IOManager, tickleDeadlock)
 #endif
 
     // schedule a busy fiber
-    manager.schedule(boost::bind(busyFiber, boost::ref(sequence)));
+    manager.schedule(std::bind(busyFiber, std::ref(sequence)));
     // schedule aditional two fibers to ensure that each thread will get
     // get at least one fiber to execute at anytime, no chance to idle.
-    manager.schedule(boost::bind(switchThreadFiber,
-                                 boost::ref(sequence), tidA, tidB),
+    manager.schedule(std::bind(switchThreadFiber,
+                                 std::ref(sequence), tidA, tidB),
                      tidA);
-    manager.schedule(boost::bind(switchThreadFiber,
-                                 boost::ref(sequence), tidA, tidB),
+    manager.schedule(std::bind(switchThreadFiber,
+                                 std::ref(sequence), tidA, tidB),
                      tidB);
     manager.stop();
 }

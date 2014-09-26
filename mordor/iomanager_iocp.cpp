@@ -2,8 +2,6 @@
 
 #include "iomanager_iocp.h"
 
-#include <boost/bind.hpp>
-
 #include "assert.h"
 #include "atomic.h"
 #include "fiber.h"
@@ -73,7 +71,7 @@ IOManager::WaitBlock::registerEvent(HANDLE hEvent,
     MORDOR_LOG_DEBUG(g_logWaitBlock) << this << " registerEvent(" << hEvent
         << ", " << dg << ")";
     if (m_inUseCount == 1) {
-        Thread thread(boost::bind(&WaitBlock::run, this));
+        Thread thread(std::bind(&WaitBlock::run, this));
     } else {
         if (!SetEvent(m_handles[0]))
             MORDOR_THROW_EXCEPTION_FROM_LAST_ERROR_API("SetEvent");

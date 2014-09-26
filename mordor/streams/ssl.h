@@ -73,7 +73,7 @@ public:
 
 private:
     void wantRead();
-    int sslCallWithLock(boost::function<int ()> dg, unsigned long *error);
+    int sslCallWithLock(std::function<int ()> dg, unsigned long *error);
 
 private:
     std::mutex m_mutex;

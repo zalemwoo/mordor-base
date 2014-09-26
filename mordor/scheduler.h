@@ -5,8 +5,6 @@
 #include <list>
 #include <mutex>
 
-#include <boost/function.hpp>
-
 #include "util.h"
 #include "thread.h"
 #include "thread_local_storage.h"

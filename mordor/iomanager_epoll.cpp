@@ -161,7 +161,7 @@ IOManager::AsyncState::resetContext(EventContext &context)
     // and it is surely run in Scheduler working fiber instead of idle fiber.
     // it is fine to pass context address to the boost function
     // since the address will be always valid until ~IOManager()
-    context.scheduler->schedule(boost::bind(
+    context.scheduler->schedule(std::bind(
         &IOManager::AsyncState::asyncResetContext, this, context));
     context.scheduler = NULL;
     context.fiber.reset();

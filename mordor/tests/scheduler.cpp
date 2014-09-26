@@ -1,7 +1,6 @@
 // Copyright (c) 2009 - Mozy, Inc.
 
 #include <mutex>
-#include <boost/bind.hpp>
 
 #include "mordor/atomic.h"
 #include "mordor/fiber.h"
@@ -86,14 +85,14 @@ MORDOR_UNITTEST(Scheduler, idempotentStartSpawn)
 MORDOR_UNITTEST(Scheduler, stopScheduledHijack)
 {
     WorkerPool pool;
-    pool.schedule(boost::bind(&Scheduler::stop, &pool));
+    pool.schedule(std::bind(&Scheduler::stop, &pool));
     pool.dispatch();
 }
 
 MORDOR_UNITTEST(Scheduler, stopScheduledHybrid)
 {
     WorkerPool pool(2);
-    pool.schedule(boost::bind(&Scheduler::stop, &pool));
+    pool.schedule(std::bind(&Scheduler::stop, &pool));
     pool.yieldTo();
 }
 
@@ -167,7 +166,7 @@ MORDOR_UNITTEST(Scheduler, spawnBasic)
     bool done = false;
     WorkerPool pool(1, false);
     Fiber::ptr f(new Fiber(
-        boost::bind(&otherThreadProc, &pool, boost::ref(done))));
+        std::bind(&otherThreadProc, &pool, std::ref(done))));
     MORDOR_TEST_ASSERT(!Scheduler::getThis());
     MORDOR_TEST_ASSERT_EQUAL(f->state(), Fiber::INIT);
     MORDOR_TEST_ASSERT(!done);
@@ -227,9 +226,9 @@ MORDOR_UNITTEST(Scheduler, parallelDo)
     WorkerPool pool;
 
     int total = 0;
-    std::vector<boost::function<void ()> > dgs;
-    dgs.push_back(boost::bind(&increment, boost::ref(total)));
-    dgs.push_back(boost::bind(&increment, boost::ref(total)));
+    std::vector<std::function<void ()> > dgs;
+    dgs.push_back(std::bind(&increment, std::ref(total)));
+    dgs.push_back(std::bind(&increment, std::ref(total)));
 
     parallel_do(dgs);
     MORDOR_TEST_ASSERT_EQUAL(total, 2);
@@ -240,9 +239,9 @@ MORDOR_UNITTEST(Scheduler, parallelDoFibersDone)
     WorkerPool pool(8u);
 
     int total = 0;
-    std::vector<boost::function<void ()> > dgs;
+    std::vector<std::function<void ()> > dgs;
     std::vector<Fiber::ptr> fibers;
-    boost::function<void ()> dg = boost::bind(&increment, boost::ref(total));
+    std::function<void ()> dg = std::bind(&increment, std::ref(total));
     for (int i = 0; i < 8; ++i) {
         dgs.push_back(dg);
         fibers.push_back(Fiber::ptr(new Fiber(NULL)));
@@ -265,7 +264,7 @@ MORDOR_UNITTEST(Scheduler, parallelDoException)
 {
     WorkerPool pool;
 
-    std::vector<boost::function<void ()> > dgs;
+    std::vector<std::function<void ()> > dgs;
     dgs.push_back(&exception);
     dgs.push_back(&exception);
 
@@ -284,8 +283,8 @@ MORDOR_UNITTEST(Scheduler, parallelForEach)
     WorkerPool pool;
 
     int sequence = 1;
-    parallel_foreach(&values[0], &values[10], boost::bind(
-        &checkEqual, _1, boost::ref(sequence)), 4);
+    parallel_foreach(&values[0], &values[10], std::bind(
+        &checkEqual, std::placeholders::_1, std::ref(sequence)), 4);
     MORDOR_TEST_ASSERT_EQUAL(sequence, 11);
 }
 
@@ -295,8 +294,8 @@ MORDOR_UNITTEST(Scheduler, parallelForEachLessThanParallelism)
     WorkerPool pool;
 
     int sequence = 1;
-    parallel_foreach(&values[0], &values[2], boost::bind(
-        &checkEqual, _1, boost::ref(sequence)), 4);
+    parallel_foreach(&values[0], &values[2], std::bind(
+        &checkEqual, std::placeholders::_1, std::ref(sequence)), 4);
     MORDOR_TEST_ASSERT_EQUAL(sequence, 3);
 }
 
@@ -315,8 +314,8 @@ MORDOR_UNITTEST(Scheduler, parallelForEachStopShort)
 
     int sequence = 1;
     MORDOR_TEST_ASSERT_EXCEPTION(
-    parallel_foreach(&values[0], &values[10], boost::bind(
-        &checkEqualStop5, _1, boost::ref(sequence), true), 4),
+    parallel_foreach(&values[0], &values[10], std::bind(
+        &checkEqualStop5, std::placeholders::_1, std::ref(sequence), true), 4),
         OperationAbortedException);
     // 5 <= sequence < 10 (we told it to stop at five, it's undefined how many
     // more got executed, because of other threads (on a single thread it's
@@ -331,8 +330,8 @@ MORDOR_UNITTEST(Scheduler, parallelForEachStopShortParallel)
 
     int sequence = 1;
     MORDOR_TEST_ASSERT_EXCEPTION(
-    parallel_foreach(&values[0], &values[10], boost::bind(
-        &checkEqualStop5, _1, boost::ref(sequence), false), 4),
+    parallel_foreach(&values[0], &values[10], std::bind(
+        &checkEqualStop5, std::placeholders::_1, std::ref(sequence), false), 4),
         OperationAbortedException);
     // 5 <= sequence < 10 (we told it to stop at five, it's undefined how many
     // more got executed, because of other threads (on a single thread it's
@@ -373,8 +372,8 @@ MORDOR_UNITTEST(Scheduler, spreadTheLoad)
         Mordor::sleep(100000);
         int count = 24;
         for (size_t i = 0; i < 24; ++i)
-            pool.schedule(boost::bind(&sleepForABit, boost::ref(threads),
-                boost::ref(mutex), Fiber::getThis(), &count));
+            pool.schedule(std::bind(&sleepForABit, std::ref(threads),
+                std::ref(mutex), Fiber::getThis(), &count));
         // We have to have one of these fibers reschedule us, because if we
         // let the pool destruct, it will call stop which will wake up all
         // the threads
@@ -403,7 +402,7 @@ MORDOR_UNITTEST(Scheduler, stopIdleMultithreaded)
     Timer::ptr timer = ioManager.registerTimer(10000000ull, &fail);
     // Wait for the other threads to get to idle first
     Mordor::sleep(100000);
-    ioManager.schedule(boost::bind(&cancelTheTimer, timer));
+    ioManager.schedule(std::bind(&cancelTheTimer, timer));
     ioManager.stop();
     // This should have taken less than a second, since we cancelled the timer
     MORDOR_TEST_ASSERT_LESS_THAN(TimerManager::now() - start, 1000000ull);
@@ -414,8 +413,8 @@ static void startTheFibers(std::set<tid_t> &threads,
 {
     Mordor::sleep(100000);
     for (size_t i = 0; i < 24; ++i)
-        Scheduler::getThis()->schedule(boost::bind(&sleepForABit,
-            boost::ref(threads), boost::ref(mutex), Fiber::ptr(),
+        Scheduler::getThis()->schedule(std::bind(&sleepForABit,
+            std::ref(threads), std::ref(mutex), Fiber::ptr(),
             (int *)NULL));
 }
 
@@ -428,8 +427,8 @@ MORDOR_UNITTEST(Scheduler, spreadTheLoadWhileStopping)
         // Wait for the other threads to get to idle first
         Mordor::sleep(100000);
 
-        pool.schedule(boost::bind(&startTheFibers, boost::ref(threads),
-            boost::ref(mutex)));
+        pool.schedule(std::bind(&startTheFibers, std::ref(threads),
+            std::ref(mutex)));
         pool.stop();
     }
     // Make sure we hit every thread
@@ -481,19 +480,20 @@ static void doSleeping(std::mutex &mutex, int &count, int &reference, int &max, 
     --reference;
 }
 
+#if 0 // Zs
 MORDOR_UNITTEST(Scheduler, parallelDoParallelism)
 {
     IOManager ioManager(6, true);
     int reference = 0, count = 0, max = 0;
     std::mutex mutex;
-    std::vector<boost::function<void ()> > dgs;
+    std::vector<std::function<void ()> > dgs;
     for (int i=0; i<1000; ++i) {
-        dgs.push_back(boost::bind(&doSleeping,
-                            boost::ref(mutex),
-                            boost::ref(count),
-                            boost::ref(reference),
-                            boost::ref(max),
-                            boost::ref(ioManager)));
+        dgs.push_back(std::bind(&doSleeping,
+                            std::ref(mutex),
+                            std::ref(count),
+                            std::ref(reference),
+                            std::ref(max),
+                            std::ref(ioManager)));
     }
     // 6 threads in IOManager, but only parallel do with 4.
     parallel_do(dgs, 4);
@@ -502,14 +502,15 @@ MORDOR_UNITTEST(Scheduler, parallelDoParallelism)
     MORDOR_TEST_ASSERT_EQUAL(count, 1000);
     MORDOR_TEST_ASSERT_LESS_THAN_OR_EQUAL(max, 4);
 }
+#endif // Ze
 
 #ifndef NDEBUG
 MORDOR_UNITTEST(Scheduler, parallelDoEvilParallelism)
 {
     WorkerPool pool(2, true);
-    std::vector<boost::function<void ()> > dgs;
+    std::vector<std::function<void ()> > dgs;
     for (int i=0; i<2; ++i) {
-        dgs.push_back(boost::bind(nop<int>, 1));
+        dgs.push_back(std::bind(nop<int>, 1));
     }
     // doing something evil, no one can save you
     MORDOR_TEST_ASSERT_ASSERTED(parallel_do(dgs, 0));
@@ -528,8 +529,8 @@ namespace {
 MORDOR_UNITTEST(Scheduler, allowYieldInDestructor)
 {
     WorkerPool pool(2, true);
-    pool.schedule(boost::bind(fun, std::shared_ptr<DummyClass>(new DummyClass)));
+    pool.schedule(std::bind(fun, std::shared_ptr<DummyClass>(new DummyClass)));
     pool.schedule(Fiber::ptr(
-            new Fiber(boost::bind(fun, std::shared_ptr<DummyClass>(new DummyClass)))));
+            new Fiber(std::bind(fun, std::shared_ptr<DummyClass>(new DummyClass)))));
     pool.stop();
 }

@@ -14,7 +14,7 @@ static Logger::ptr g_log = Log::lookup("mordor:parallel");
 
 static
 void
-parallel_do_impl(boost::function<void ()> dg, size_t &completed,
+parallel_do_impl(std::function<void ()> dg, size_t &completed,
     size_t total, boost::exception_ptr &exception, Scheduler *scheduler,
     Fiber::ptr caller, FiberSemaphore *sem)
 {
@@ -35,13 +35,13 @@ parallel_do_impl(boost::function<void ()> dg, size_t &completed,
 }
 
 void
-parallel_do(const std::vector<boost::function<void ()> > &dgs,
+parallel_do(const std::vector<std::function<void ()> > &dgs,
     int parallelism)
 {
     size_t completed = 0;
     Scheduler *scheduler = Scheduler::getThis();
     Fiber::ptr caller = Fiber::getThis();
-    std::vector<boost::function<void ()> >::const_iterator it;
+    std::vector<std::function<void ()> >::const_iterator it;
 
     if (scheduler == NULL || dgs.size() <= 1) {
         for(it = dgs.begin(); it != dgs.end(); ++it) {
@@ -60,8 +60,8 @@ parallel_do(const std::vector<boost::function<void ()> > &dgs,
     fibers.reserve(dgs.size());
     exceptions.resize(dgs.size());
     for(size_t i = 0; i < dgs.size(); ++i) {
-        Fiber::ptr f(new Fiber(boost::bind(&parallel_do_impl, dgs[i],
-            boost::ref(completed), dgs.size(), boost::ref(exceptions[i]),
+        Fiber::ptr f(new Fiber(std::bind(&parallel_do_impl, dgs[i],
+                std::ref(completed), dgs.size(), std::ref(exceptions[i]),
             scheduler, caller, sem.get())));
         fibers.push_back(f);
         scheduler->schedule(f);
@@ -79,7 +79,7 @@ parallel_do(const std::vector<boost::function<void ()> > &dgs,
 }
 
 void
-parallel_do(const std::vector<boost::function<void ()> > &dgs,
+parallel_do(const std::vector<std::function<void ()> > &dgs,
             std::vector<Fiber::ptr> &fibers,
             int parallelism)
 {
@@ -87,7 +87,7 @@ parallel_do(const std::vector<boost::function<void ()> > &dgs,
     size_t completed = 0;
     Scheduler *scheduler = Scheduler::getThis();
     Fiber::ptr caller = Fiber::getThis();
-    std::vector<boost::function<void ()> >::const_iterator it;
+    std::vector<std::function<void ()> >::const_iterator it;
 
     if (scheduler == NULL || dgs.size() <= 1) {
         for(it = dgs.begin(); it != dgs.end(); ++it) {
@@ -104,8 +104,8 @@ parallel_do(const std::vector<boost::function<void ()> > &dgs,
     std::vector<boost::exception_ptr> exceptions;
     exceptions.resize(dgs.size());
     for(size_t i = 0; i < dgs.size(); ++i) {
-        fibers[i]->reset(boost::bind(&parallel_do_impl, dgs[i],
-            boost::ref(completed), dgs.size(), boost::ref(exceptions[i]),
+        fibers[i]->reset(std::bind(&parallel_do_impl, dgs[i],
+                std::ref(completed), dgs.size(), std::ref(exceptions[i]),
             scheduler, caller, sem.get()));
         scheduler->schedule(fibers[i]);
     }

@@ -13,7 +13,7 @@ class Timer;
 class TimeoutHandler
 {
 public:
-    typedef boost::function<void ()> TimeoutDg;
+    typedef std::function<void ()> TimeoutDg;
 
 private:
     enum STATUS {

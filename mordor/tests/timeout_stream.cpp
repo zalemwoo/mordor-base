@@ -61,7 +61,7 @@ MORDOR_UNITTEST(TimeoutStream, timeoutSetAfterOpBegan)
     TimeoutStream::ptr timeout(new TimeoutStream(streams.first, ioManager));
 
     Buffer rb("test");
-    ioManager.schedule(boost::bind(&TimeoutStream::readTimeout, timeout, 0));
+    ioManager.schedule(std::bind(&TimeoutStream::readTimeout, timeout, 0));
     MORDOR_TEST_ASSERT_EXCEPTION(timeout->read(rb, 4), TimedOutException);
 }
 
@@ -74,7 +74,7 @@ MORDOR_UNITTEST(TimeoutStream, timeoutChangedAfterOpBegan)
 
     timeout->readTimeout(400000);
     Buffer rb("test");
-    ioManager.schedule(boost::bind(&TimeoutStream::readTimeout, timeout, 200000));
+    ioManager.schedule(std::bind(&TimeoutStream::readTimeout, timeout, 200000));
     unsigned long long now = TimerManager::now();
     MORDOR_TEST_ASSERT_EXCEPTION(timeout->read(rb, 4), TimedOutException);
     MORDOR_TEST_ASSERT_ABOUT_EQUAL(TimerManager::now() - now, 200000u, 50000);

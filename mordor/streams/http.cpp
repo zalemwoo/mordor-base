@@ -13,7 +13,7 @@ using namespace Mordor::HTTP;
 namespace Mordor {
 
 HTTPStream::HTTPStream(const URI &uri, RequestBroker::ptr requestBroker,
-    boost::function<bool (size_t)> delayDg)
+    std::function<bool (size_t)> delayDg)
 : FilterStream(Stream::ptr(), false),
   m_hasResponse(false),
   m_requestBroker(requestBroker),
@@ -33,7 +33,7 @@ HTTPStream::HTTPStream(const URI &uri, RequestBroker::ptr requestBroker,
 }
 
 HTTPStream::HTTPStream(const Request &requestHeaders, RequestBroker::ptr requestBroker,
-    boost::function<bool (size_t)> delayDg)
+    std::function<bool (size_t)> delayDg)
 : FilterStream(Stream::ptr(), false),
   m_requestHeaders(requestHeaders),
   m_hasResponse(false),
@@ -309,7 +309,7 @@ HTTPStream::startWrite()
 {
     try {
         m_writeRequest = m_requestBroker->request(m_requestHeaders,
-            false, boost::bind(&HTTPStream::doWrite, this, _1));
+            false, std::bind(&HTTPStream::doWrite, this, _1));
         m_writeInProgress = false;
         m_writeFuture.signal();
     } catch (OperationAbortedException &) {
@@ -375,7 +375,7 @@ HTTPStream::write(const Buffer &buffer, size_t length)
         m_writeInProgress = true;
         MORDOR_ASSERT(Scheduler::getThis());
         Scheduler::getThis()->schedule(
-            boost::bind(&HTTPStream::startWrite, this));
+            std::bind(&HTTPStream::startWrite, this));
         m_writeFuture.wait();
         if (m_writeException)
             Mordor::rethrow_exception(m_writeException);

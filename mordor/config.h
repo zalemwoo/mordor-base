@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include <boost/function.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/multi_index_container.hpp>
 #include <boost/multi_index/ordered_index.hpp>
@@ -132,7 +131,7 @@ public:
     /// onChange should not throw any exceptions
     boost::signals2::signal<void ()> onChange;
     /// @deprecated (use onChange directly)
-    void monitor(boost::function<void ()> dg) { onChange.connect(dg); }
+    void monitor(std::function<void ()> dg) { onChange.connect(dg); }
 
     virtual std::string toString() const = 0;
     /// @return If the new value was accepted
@@ -288,7 +287,7 @@ public:
     static ConfigVarBase::ptr lookup(const std::string &name);
 
     // Use to iterate all the ConfigVars
-    static void visit(boost::function<void (ConfigVarBase::ptr)> dg);
+    static void visit(std::function<void (ConfigVarBase::ptr)> dg);
 
     /// Load ConfigVars from command line arguments
     ///
@@ -356,8 +355,8 @@ class Scheduler;
 std::shared_ptr<Timer> associateTimerWithConfigVar(
     TimerManager &timerManager,
     std::shared_ptr<ConfigVar<std::string> > configVar,
-    boost::function<void ()> dg);
-#endif // Ze
+    std::function<void ()> dg);
+
 
 /// Associate a scheduler with a ConfigVar
 ///
@@ -367,6 +366,7 @@ std::shared_ptr<Timer> associateTimerWithConfigVar(
 void associateSchedulerWithConfigVar(Scheduler &scheduler,
     std::shared_ptr<ConfigVar<int> > configVar);
 
+#endif // Ze
 
 /// helper class to allow temporarily change the ConfigVar Value
 ///

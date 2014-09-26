@@ -1,7 +1,5 @@
 // Copyright (c) 2009 - Mozy, Inc.
 
-#include <boost/bind.hpp>
-
 #include "mordor/atomic.h"
 #include "mordor/fiber.h"
 #include "mordor/fibersynchronization.h"
@@ -39,12 +37,12 @@ template<typename M> void test_mutex_contention()
     int sequence = 0;
     Fiber::ptr fiber1(new Fiber(NULL)), fiber2(new Fiber(NULL)),
         fiber3(new Fiber(NULL));
-    fiber1->reset(boost::bind(&contentionFiber<M>, 1, boost::ref(mutex),
-        boost::ref(sequence)));
-    fiber2->reset(boost::bind(&contentionFiber<M>, 2, boost::ref(mutex),
-        boost::ref(sequence)));
-    fiber3->reset(boost::bind(&contentionFiber<M>, 3, boost::ref(mutex),
-        boost::ref(sequence)));
+    fiber1->reset(std::bind(&contentionFiber<M>, 1, std::ref(mutex),
+        std::ref(sequence)));
+    fiber2->reset(std::bind(&contentionFiber<M>, 2, std::ref(mutex),
+        std::ref(sequence)));
+    fiber3->reset(std::bind(&contentionFiber<M>, 3, std::ref(mutex),
+        std::ref(sequence)));
 
     {
         typename M::ScopedLock lock(mutex);
@@ -86,7 +84,7 @@ template<typename M> void test_mutex_unlockUnique()
 
     typename M::ScopedLock lock(mutex);
     MORDOR_TEST_ASSERT(!lock.unlockIfNotUnique());
-    pool.schedule(boost::bind(&lockIt<M>, boost::ref(mutex)));
+    pool.schedule(std::bind(&lockIt<M>, std::ref(mutex)));
     Scheduler::yield();
     MORDOR_TEST_ASSERT(lock.unlockIfNotUnique());
     pool.dispatch();
@@ -124,10 +122,10 @@ template<typename M> void test_mutex_performance()
     Atomic<int> counter = repeatness;
     unsigned long long before = TimerManager::now();
     for (int i=0; i<repeatness; ++i) {
-        ioManager.schedule(boost::bind(lockAndHold<M>,
-                                boost::ref(ioManager),
-                                boost::ref(mutex),
-                                boost::ref(counter)));
+        ioManager.schedule(std::bind(lockAndHold<M>,
+                                std::ref(ioManager),
+                                std::ref(mutex),
+                                std::ref(counter)));
     }
     ioManager.stop();
     unsigned long long elapse = TimerManager::now() - before;
@@ -187,8 +185,8 @@ MORDOR_UNITTEST(FiberCondition, signal)
     FiberCondition condition(mutex);
 
     FiberMutex::ScopedLock lock(mutex);
-    pool.schedule(boost::bind(&signalMe, boost::ref(condition),
-        boost::ref(sequence)));
+    pool.schedule(std::bind(&signalMe, std::ref(condition),
+        std::ref(sequence)));
     MORDOR_TEST_ASSERT_EQUAL(++sequence, 1);
     condition.wait();
     MORDOR_TEST_ASSERT_EQUAL(++sequence, 3);
@@ -211,12 +209,12 @@ MORDOR_UNITTEST(FiberCondition, broadcast)
     FiberMutex mutex;
     FiberCondition condition(mutex);
 
-    pool.schedule(boost::bind(&waitOnMe, boost::ref(condition),
-        boost::ref(mutex), boost::ref(sequence), 1));
-    pool.schedule(boost::bind(&waitOnMe, boost::ref(condition),
-        boost::ref(mutex), boost::ref(sequence), 2));
-    pool.schedule(boost::bind(&waitOnMe, boost::ref(condition),
-        boost::ref(mutex), boost::ref(sequence), 3));
+    pool.schedule(std::bind(&waitOnMe, std::ref(condition),
+        std::ref(mutex), std::ref(sequence), 1));
+    pool.schedule(std::bind(&waitOnMe, std::ref(condition),
+        std::ref(mutex), std::ref(sequence), 2));
+    pool.schedule(std::bind(&waitOnMe, std::ref(condition),
+        std::ref(mutex), std::ref(sequence), 3));
     MORDOR_TEST_ASSERT_EQUAL(++sequence, 1);
     pool.dispatch();
     MORDOR_TEST_ASSERT_EQUAL(++sequence, 8);
@@ -237,8 +235,8 @@ MORDOR_UNITTEST(FiberEvent, autoResetSetWithoutExistingWaiters)
     WorkerPool pool;
     FiberEvent event;
 
-    pool.schedule(boost::bind(&signalMe2, boost::ref(event),
-        boost::ref(sequence)));
+    pool.schedule(std::bind(&signalMe2, std::ref(event),
+        std::ref(sequence)));
     MORDOR_TEST_ASSERT_EQUAL(++sequence, 1);
     event.wait();
     MORDOR_TEST_ASSERT_EQUAL(++sequence, 3);
@@ -266,8 +264,8 @@ MORDOR_UNITTEST(FiberEvent, autoResetSetWithExistingWaiters)
     FiberEvent event;
     static const unsigned long long awhile = 50000ULL; // sleep for 50ms
 
-    manager.schedule(boost::bind(&signalMe3, boost::ref(manager),
-        boost::ref(event), boost::ref(sequence), awhile));
+    manager.schedule(std::bind(&signalMe3, std::ref(manager),
+        std::ref(event), std::ref(sequence), awhile));
     MORDOR_TEST_ASSERT_EQUAL(++sequence, 1);
     event.wait();
     MORDOR_TEST_ASSERT_EQUAL(++sequence, 3);
@@ -284,8 +282,8 @@ MORDOR_UNITTEST(FiberEvent, manualReset)
     WorkerPool pool;
     FiberEvent event(false);
 
-    pool.schedule(boost::bind(&signalMe2, boost::ref(event),
-        boost::ref(sequence)));
+    pool.schedule(std::bind(&signalMe2, std::ref(event),
+        std::ref(sequence)));
     MORDOR_TEST_ASSERT_EQUAL(++sequence, 1);
     event.wait();
     MORDOR_TEST_ASSERT_EQUAL(++sequence, 3);
@@ -308,12 +306,12 @@ MORDOR_UNITTEST(FiberEvent, manualResetMultiple)
     WorkerPool pool;
     FiberEvent event(false);
 
-    pool.schedule(boost::bind(&waitOnMe2, boost::ref(event),
-        boost::ref(sequence), 1));
-    pool.schedule(boost::bind(&waitOnMe2, boost::ref(event),
-        boost::ref(sequence), 2));
-    pool.schedule(boost::bind(&waitOnMe2, boost::ref(event),
-        boost::ref(sequence), 3));
+    pool.schedule(std::bind(&waitOnMe2, std::ref(event),
+        std::ref(sequence), 1));
+    pool.schedule(std::bind(&waitOnMe2, std::ref(event),
+        std::ref(sequence), 2));
+    pool.schedule(std::bind(&waitOnMe2, std::ref(event),
+        std::ref(sequence), 3));
     MORDOR_TEST_ASSERT_EQUAL(++sequence, 1);
     pool.dispatch();
     MORDOR_TEST_ASSERT_EQUAL(++sequence, 5);
@@ -375,7 +373,7 @@ MORDOR_UNITTEST(FiberEvent, destroyAfterSet)
         WorkerPool pool;
         WorkerPool pool2(1,false);
         EventOwner owner;
-        pool2.schedule(boost::bind(&EventOwner::setEvent, &owner));
+        pool2.schedule(std::bind(&EventOwner::setEvent, &owner));
     }
 #endif
 
@@ -385,7 +383,7 @@ MORDOR_UNITTEST(FiberEvent, destroyAfterSet)
         WorkerPool pool;
         WorkerPool pool2(1,false);
         EventOwner owner;
-        pool2.schedule(boost::bind(&EventOwner::setEvent, &owner));
+        pool2.schedule(std::bind(&EventOwner::setEvent, &owner));
         pool2.stop();
     }
 
@@ -395,7 +393,7 @@ MORDOR_UNITTEST(FiberEvent, destroyAfterSet)
         WorkerPool pool;
         EventOwner owner;
         WorkerPool pool2(1,false);
-        pool2.schedule(boost::bind(&EventOwner::setEvent, &owner));
+        pool2.schedule(std::bind(&EventOwner::setEvent, &owner));
     }
 
     {
@@ -403,7 +401,7 @@ MORDOR_UNITTEST(FiberEvent, destroyAfterSet)
         // owner is destroyed
         WorkerPool pool;
         EventOwner owner;
-        pool.schedule(boost::bind(&EventOwner::setEvent, &owner));
+        pool.schedule(std::bind(&EventOwner::setEvent, &owner));
         pool.stop();
     }
 
@@ -412,7 +410,7 @@ MORDOR_UNITTEST(FiberEvent, destroyAfterSet)
         // blocks until setEvent is complete, then owner is destroyed
         EventOwner owner;
         WorkerPool pool;
-        pool.schedule(boost::bind(&EventOwner::setEvent, &owner));
+        pool.schedule(std::bind(&EventOwner::setEvent, &owner));
     }
 
     {
@@ -420,7 +418,7 @@ MORDOR_UNITTEST(FiberEvent, destroyAfterSet)
         // Because only one fiber executes at a time on the single thread
         WorkerPool pool;
         EventOwner owner;
-        pool.schedule(boost::bind(&EventOwner::setEvent, &owner));
+        pool.schedule(std::bind(&EventOwner::setEvent, &owner));
     }
 
 

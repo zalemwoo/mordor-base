@@ -205,7 +205,7 @@ TimerManager::registerConditionTimer(unsigned long long us,
     bool recurring)
 {
     return registerTimer(us,
-        boost::bind(stubOnTimer, weakCond, dg),
+        std::bind(stubOnTimer, weakCond, dg),
         recurring);
 }
 

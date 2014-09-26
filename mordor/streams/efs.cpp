@@ -1,7 +1,5 @@
 // Copyright (c) 2009 - Mozy, Inc.
 
-#include <boost/bind.hpp>
-
 #include "efs.h"
 
 #include "buffer.h"
@@ -91,11 +89,11 @@ void
 EFSStream::init()
 {
     MORDOR_ASSERT(m_context);
-    boost::function<void ()> dg;
+    std::function<void ()> dg;
     if (m_read) {
-        dg = boost::bind(&EFSStream::readFiber, this);
+        dg = std::bind(&EFSStream::readFiber, this);
     } else {
-        dg = boost::bind(&EFSStream::writeFiber, this);
+        dg = std::bind(&EFSStream::writeFiber, this);
     }
     if (m_fiber) {
         m_fiber->reset(dg);
