@@ -1,0 +1,359 @@
+#ifndef __MORDOR_SOCKET_H__
+#define __MORDOR_SOCKET_H__
+// Copyright (c) 2009 - Mozy, Inc.
+
+#include <vector>
+
+#include <boost/signals2/signal.hpp>
+
+#include "util.h"
+#include "endian.h"
+#include "exception.h"
+#include "version.h"
+
+#ifdef WINDOWS
+#include <ws2tcpip.h>
+#include "iomanager.h"
+#else
+#include <stdint.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <netinet/in.h>
+#ifndef OSX
+# include <netinet/in_systm.h>
+# include <netinet/ip.h>
+#endif
+#include <sys/un.h>
+#endif
+
+namespace Mordor {
+
+class IOManager;
+
+#ifdef WINDOWS
+struct iovec
+{
+    union
+    {
+        WSABUF wsabuf;
+        struct {
+            u_long iov_len;
+            void *iov_base;
+        };
+    };
+};
+#define SHUT_RD SD_RECEIVE
+#define SHUT_WR SD_SEND
+#define SHUT_RDWR SD_BOTH
+typedef u_long iov_len_t;
+typedef SOCKET socket_t;
+#else
+typedef size_t iov_len_t;
+typedef int socket_t;
+#endif
+
+struct SocketException : virtual NativeException {};
+
+struct AddressInUseException : virtual SocketException {};
+struct ConnectionAbortedException : virtual SocketException {};
+struct ConnectionResetException : virtual SocketException {};
+struct ConnectionRefusedException : virtual SocketException {};
+struct HostDownException : virtual SocketException {};
+struct HostUnreachableException : virtual SocketException {};
+struct NetworkDownException : virtual SocketException {};
+struct NetworkResetException : virtual SocketException {};
+struct NetworkUnreachableException : virtual SocketException {};
+struct TimedOutException : virtual SocketException {};
+
+struct Address;
+
+class Socket : public std::enable_shared_from_this<Socket>, Mordor::noncopyable
+{
+public:
+    typedef std::shared_ptr<Socket> ptr;
+    typedef std::weak_ptr<Socket> weak_ptr;
+private:
+    Socket(IOManager *ioManager, int family, int type, int protocol, int initialize);
+public:
+    Socket(int family, int type, int protocol = 0);
+    Socket(IOManager &ioManager, int family, int type, int protocol = 0);
+    ~Socket();
+
+    unsigned long long receiveTimeout() { return m_receiveTimeout; }
+    void receiveTimeout(unsigned long long us) { m_receiveTimeout = us; }
+    unsigned long long sendTimeout() { return m_sendTimeout; }
+    void sendTimeout(unsigned long long us) { m_sendTimeout = us; }
+
+    void bind(const Address &addr);
+    void bind(const std::shared_ptr<Address> addr);
+    void connect(const Address &to);
+    void connect(const std::shared_ptr<Address> addr)
+    { connect(*addr.get()); }
+    void listen(int backlog = SOMAXCONN);
+
+    Socket::ptr accept();
+    void shutdown(int how = SHUT_RDWR);
+
+    void getOption(int level, int option, void *result, size_t *len);
+    template <class T>
+    T getOption(int level, int option)
+    {
+        T result;
+        size_t length = sizeof(T);
+        getOption(level, option, &result, &length);
+        return result;
+    }
+    void setOption(int level, int option, const void *value, size_t len);
+    template <class T>
+    void setOption(int level, int option, const T &value)
+    {
+        setOption(level, option, &value, sizeof(T));
+    }
+
+    void cancelAccept();
+    void cancelConnect();
+    void cancelSend();
+    void cancelReceive();
+
+    size_t send(const void *buffer, size_t length, int flags = 0);
+    size_t send(const iovec *buffers, size_t length, int flags = 0);
+    size_t sendTo(const void *buffer, size_t length, int flags, const Address &to);
+    size_t sendTo(const void *buffer, size_t length, int flags, const std::shared_ptr<Address> to)
+    { return sendTo(buffer, length, flags, *to.get()); }
+    size_t sendTo(const iovec *buffers, size_t length, int flags, const Address &to);
+    size_t sendTo(const iovec *buffers, size_t length, int flags, const std::shared_ptr<Address> to)
+    { return sendTo(buffers, length, flags, *to.get()); }
+
+    size_t receive(void *buffer, size_t length, int *flags = NULL);
+    size_t receive(iovec *buffers, size_t length, int *flags = NULL);
+    size_t receiveFrom(void *buffer, size_t length, Address &from, int *flags = NULL);
+    size_t receiveFrom(iovec *buffers, size_t length, Address &from, int *flags = NULL);
+
+    std::shared_ptr<Address> emptyAddress();
+    std::shared_ptr<Address> remoteAddress();
+    std::shared_ptr<Address> localAddress();
+
+    int family() { return m_family; }
+    int type();
+    int protocol() { return m_protocol; }
+
+    /// Event triggered when the remote end of the connection closes the
+    /// virtual circuit
+    ///
+    /// Only triggered for connected stream sockets.  This event is trigerred
+    /// out-of-band of any receive operations (i.e. there may still be data on
+    /// the socket to be read after this event has been received)
+    boost::signals2::connection onRemoteClose(
+        const boost::signals2::slot<void ()> &slot);
+
+private:
+    template <bool isSend>
+    size_t doIO(iovec *buffers, size_t length, int &flags, Address *address = NULL);
+    static void callOnRemoteClose(weak_ptr self);
+    void registerForRemoteClose();
+    void accept(Socket &target);
+
+#ifdef WINDOWS
+    // For WSAEventSelect
+    void cancelIo(error_t &cancelled, error_t error);
+#else
+    void cancelIo(int event, error_t &cancelled, error_t error);
+#endif
+
+private:
+    socket_t m_sock;
+    int m_family, m_protocol;
+    IOManager *m_ioManager;
+    unsigned long long m_receiveTimeout, m_sendTimeout;
+    error_t m_cancelledSend, m_cancelledReceive;
+    std::shared_ptr<Address> m_localAddress, m_remoteAddress;
+#ifdef WINDOWS
+    bool m_skipCompletionPortOnSuccess;
+    // All this, just so a connect/accept can be cancelled on win2k
+    bool m_unregistered;
+    HANDLE m_hEvent;
+    std::shared_ptr<Fiber> m_fiber;
+    Scheduler *m_scheduler;
+
+    AsyncEvent m_sendEvent, m_receiveEvent;
+    bool m_useAcceptEx;         //Cache the values in case they are changed in the registry at
+    bool m_useConnectEx;        //runtime
+
+#endif
+    bool m_isConnected, m_isRegisteredForRemoteClose;
+    boost::signals2::signal<void ()> m_onRemoteClose;
+};
+
+#ifdef WINDOWS
+typedef errinfo_lasterror errinfo_gaierror;
+#else
+typedef boost::error_info<struct tag_gaierror, int> errinfo_gaierror;
+std::string to_string( errinfo_gaierror const & e );
+#endif
+
+struct NameLookupException : virtual SocketException {};
+struct TemporaryNameServerFailureException : virtual NameLookupException {};
+struct PermanentNameServerFailureException : virtual NameLookupException {};
+struct NoNameServerDataException : virtual NameLookupException {};
+struct HostNotFoundException : virtual NameLookupException {};
+
+struct Address
+{
+public:
+    typedef std::shared_ptr<Address> ptr;
+protected:
+    Address() {}
+public:
+    virtual ~Address() {}
+
+    static std::vector<ptr>
+        lookup(const std::string& host, int family = AF_UNSPEC,
+            int type = 0, int protocol = 0);
+    /// @returns interface => (address, prefixLength)
+    static std::multimap<std::string, std::pair<ptr, unsigned int> >
+        getInterfaceAddresses(int family = AF_UNSPEC);
+    // @param iface Interface name, or "*" to indicate all interfaces
+    static std::vector<std::pair<ptr, unsigned int> >
+        getInterfaceAddresses(const std::string &iface,
+        int family = AF_UNSPEC);
+    static ptr create(const sockaddr *name, socklen_t nameLen);
+
+    ptr clone();
+
+    Socket::ptr createSocket(int type, int protocol = 0);
+    Socket::ptr createSocket(IOManager &ioManager, int type, int protocol = 0);
+
+    int family() const { return name()->sa_family; }
+    virtual const sockaddr *name() const = 0;
+    virtual sockaddr *name() = 0;
+    virtual socklen_t nameLen() const = 0;
+    virtual std::ostream & insert(std::ostream &os) const;
+
+    bool operator<(const Address &rhs) const;
+    bool operator==(const Address &rhs) const;
+    bool operator!=(const Address &rhs) const;
+};
+
+struct IPAddress : public Address
+{
+public:
+    typedef std::shared_ptr<IPAddress> ptr;
+
+public:
+    /// Create an IPAddress from a numeric string
+    /// @note port should be provided in native-endian format
+    /// @note std::invalid_argument may be thrown if it is an IPv6 address and
+    ///       IPv6 is not supported
+    static ptr create(const char *address, unsigned short port = 0);
+
+    ptr clone();
+
+    virtual ptr broadcastAddress(unsigned int prefixLength) = 0;
+    virtual ptr networkAddress(unsigned int prefixLength) = 0;
+    virtual ptr subnetMask(unsigned int prefixLength) = 0;
+
+    virtual unsigned short port() const = 0;
+    virtual void port(unsigned short p) = 0;
+};
+
+struct IPv4Address : public IPAddress
+{
+public:
+    /// @note address and port should be provided in native-endian format
+    IPv4Address(unsigned int address = INADDR_ANY, unsigned short port = 0);
+    /// @note port should be provided in native-endian format
+    IPv4Address(const char *address, unsigned short port = 0);
+
+    ptr broadcastAddress(unsigned int prefixLength);
+    ptr networkAddress(unsigned int prefixLength);
+    ptr subnetMask(unsigned int prefixLength)
+    { return IPv4Address::createSubnetMask(prefixLength); }
+    static ptr createSubnetMask(unsigned int prefixLength);
+
+    unsigned short port() const { return byteswapOnLittleEndian(sin.sin_port); }
+    void port(unsigned short p) { sin.sin_port = byteswapOnLittleEndian(p); }
+
+    const sockaddr *name() const { return (sockaddr*)&sin; }
+    sockaddr *name() { return (sockaddr*)&sin; }
+    socklen_t nameLen() const { return sizeof(sockaddr_in); }
+
+    std::ostream & insert(std::ostream &os) const;
+private:
+    sockaddr_in sin;
+};
+
+struct IPv6Address : public IPAddress
+{
+public:
+    IPv6Address();
+    IPv6Address(const unsigned char address[16], unsigned short port = 0);
+    IPv6Address(const char *address, unsigned short port = 0);
+
+    ptr broadcastAddress(unsigned int prefixLength);
+    ptr networkAddress(unsigned int prefixLength);
+    ptr subnetMask(unsigned int prefixLength)
+    { return createSubnetMask(prefixLength); }
+    static ptr createSubnetMask(unsigned int prefixLength);
+
+    unsigned short port() const { return byteswapOnLittleEndian(sin.sin6_port); }
+    void port(unsigned short p) { sin.sin6_port = byteswapOnLittleEndian(p); }
+
+    const sockaddr *name() const { return (sockaddr*)&sin; }
+    sockaddr *name() { return (sockaddr*)&sin; }
+    socklen_t nameLen() const { return sizeof(sockaddr_in6); }
+
+    std::ostream & insert(std::ostream &os) const;
+private:
+    sockaddr_in6 sin;
+};
+
+#ifndef WINDOWS
+struct UnixAddress : public Address
+{
+public:
+    /// @pre @c path.length() is less or equal to MAX_PATH_LEN
+    UnixAddress(const std::string &path);
+    /// create a dummy instance of @c UnixAddress
+    ///
+    /// an all '\0' string sized @c MAX_PATH_LEN is used as the path for the
+    /// address.
+    ///
+    /// @note one is supposed to fill the sockaddr returned by @name() before
+    ///       actually start using it, and to set the @length correctly using
+    ///       @c nameLen(size_t).
+    UnixAddress();
+    const sockaddr *name() const { return (sockaddr*)&sun; }
+    sockaddr *name() { return (sockaddr*)&sun; }
+    socklen_t nameLen() const { return length; }
+    void nameLen(socklen_t len) { length = len; }
+
+    std::ostream & insert(std::ostream &os) const;
+    static const size_t MAX_PATH_LEN;
+private:
+    socklen_t length;
+    struct sockaddr_un sun;
+};
+#endif
+
+struct UnknownAddress : public Address
+{
+public:
+    UnknownAddress(int family);
+
+    const sockaddr *name() const { return &sa; }
+    sockaddr *name() { return &sa; }
+    socklen_t nameLen() const { return sizeof(sockaddr); }
+private:
+    sockaddr sa;
+};
+
+std::ostream &operator <<(std::ostream &os, const Address &addr);
+
+bool operator<(const Address::ptr &lhs, const Address::ptr &rhs);
+
+std::ostream &includePort(std::ostream &os);
+std::ostream &excludePort(std::ostream &os);
+
+}
+
+#endif
