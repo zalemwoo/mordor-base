@@ -23,7 +23,6 @@ config.guess*
 autoconfig.h
 autoconfig.h.in
 autoconfig.h.in~
-config.h
 config.h.in
 config.h.in~
 config.log
