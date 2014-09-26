@@ -9,11 +9,8 @@
 #include <openssl/sha.h>
 #endif // Ze
 
-#ifdef HAVE_CONFIG_H
-#include "autoconfig.h"
 #ifdef HAVE_ICONV
 #include <iconv.h>
-#endif
 #endif
 
 #include "mordor/string.h"

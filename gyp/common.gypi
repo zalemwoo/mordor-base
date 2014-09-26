@@ -1,10 +1,9 @@
 {
   'variables': {
 	'conditions': [
-      ['OS == "mac"', {
+      ['OS != "win"', {
         'target_arch%': 'x64',
-      }],
-      ['OS == "win"', {
+      },{
         'target_arch%': 'ia32',
       }],
 	  ['OS != "mac" and OS != "win"', {
@@ -31,12 +30,14 @@
           'ARCHS': ['x86_64'],
         },
       }], # target_archs == "x64"
-
-      ['OS == "linux"',{
+    ],
+    'conditions': [
+      ['OS != "win"',{
 #        'defines':['HAVE_CONFIG_H=1'],
+        'defines':['HAVE_ICONV'],
         'cflags': ['-pthread --std=c++11 -fno-strict-aliasing'],
         'include_dirs':[
-            '/usr/local/include',
+          '/usr/local/include',
         ]
       }],
     ],
@@ -56,6 +57,7 @@
           },
           'VCLinkerTool': {
             'LinkIncremental': '2',
+            'GenerateDebugInformation': 'true',
           },
         },
         'xcode_settings': {
