@@ -14,6 +14,7 @@
 #include "assert.h"
 #include "fiber.h"
 #include "mordor/config.h"
+#include "mordor/streams/file.h"
 #include "mordor/string.h"
 #include "timer.h"
 
@@ -43,6 +44,8 @@ static ConfigVar<std::string>::ptr g_logTrace =
 
 static ConfigVar<bool>::ptr g_logStdout =
     Config::lookup("log.stdout", false, "Log to stdout");
+static ConfigVar<std::string>::ptr g_logFile =
+    Config::lookup("log.file", std::string(), "Log to file");
 #ifdef WINDOWS
 static ConfigVar<bool>::ptr g_logDebugWindow =
     Config::lookup("log.debug", false, "Log to Debug Window");
@@ -71,6 +74,7 @@ static struct LogInitializer
         g_logTrace->monitor(&enableLoggers);
 
         g_logStdout->monitor(&enableStdoutLogging);
+        g_logFile->monitor(&enableFileLogging);
 #ifdef WINDOWS
         g_logDebugWindow->monitor(&enableDebugLogging);
 #else
@@ -150,6 +154,25 @@ static void enableStdoutLogging()
     }
 }
 
+static void enableFileLogging()
+{
+    static LogSink::ptr fileSink;
+    std::string file = g_logFile->val();
+    if (fileSink.get() && file.empty()) {
+        Log::root()->removeSink(fileSink);
+        fileSink.reset();
+    } else if (!file.empty()) {
+        if (fileSink.get()) {
+            if (static_cast<FileLogSink*>(fileSink.get())->file() == file)
+                return;
+            Log::root()->removeSink(fileSink);
+            fileSink.reset();
+        }
+        fileSink.reset(new FileLogSink(file));
+        Log::root()->addSink(fileSink);
+    }
+}
+
 #ifdef WINDOWS
 static void enableDebugLogging()
 {
@@ -199,6 +222,29 @@ StdoutLogSink::log(const std::string &logger,
         << str << std::endl;
     std::cout << os.str();
     std::cout.flush();
+}
+
+FileLogSink::FileLogSink(const std::string &file)
+{
+    m_stream.reset(new FileStream(file, FileStream::APPEND,
+        FileStream::OPEN_OR_CREATE));
+    m_file = file;
+}
+
+void
+FileLogSink::log(const std::string &logger,
+        std::chrono::system_clock::time_point now, unsigned long long elapsed,
+        tid_t thread, void *fiber,
+        Log::Level level, const std::string &str,
+        const char *file, int line)
+{
+    std::ostringstream os;
+    os << std::chrono::system_clock::to_time_t(now) << " " << elapsed << " " << level << " " << thread << " "
+        << fiber << " " << logger << " " << file << ":" << line << " "
+        << str << std::endl;
+    std::string logline = os.str();
+    m_stream->write(logline.c_str(), logline.size());
+    m_stream->flush();
 }
 
 #ifdef WINDOWS

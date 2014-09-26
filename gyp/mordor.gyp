@@ -104,44 +104,6 @@
         '../mordor/util.cpp',
         '../mordor/parallel.cpp',
         '../mordor/log.cpp',
-      ],
-      'conditions': [
-        ['OS == "linux"', {
-          'sources':[
-            '../mordor/iomanager_epoll.cpp',
-          ]
-        }],
-        ['OS == "mac"', {
-          'sources':[
-            '../mordor/iomanager_kqueue.cpp',
-          ]
-        }],
-        ['OS == "win"', {
-          'sources':[
-            '../mordor/eventloop.cpp',
-            '../mordor/runtime_linking.cpp',
-            '../mordor/iomanager_iocp.cpp',
-          ]
-        }],
-      ],
-    },
-    {
-      'target_name': 'mordor_lib',
-      'product_name': 'mordor',
-      'type': 'static_library',
-      'dependencies': [
-        'mordor_base',
-      ],
-      'sources': [
-        '../mordor/log_file.cpp',
-#        '../mordor/zip.cpp',
-#        '../mordor/openssl_lock.cpp',
-#        '../mordor/daemon.cpp',
-#        '../mordor/socket.cpp',
-#        '../mordor/socks.cpp',
-#        '../mordor/ragel.cpp',
-#        '../mordor/protobuf.cpp',
-#        '../mordor/yaml.cpp',
         '../mordor/streams/stream.cpp',
         '../mordor/streams/std.cpp',
         '../mordor/streams/buffer.cpp',
@@ -164,43 +126,29 @@
         '../mordor/streams/transfer.cpp',
         '../mordor/streams/throttle.cpp',
         '../mordor/streams/test.cpp',
-#        '../mordor/streams/lzma2.cpp',
-#        '../mordor/streams/http.cpp',
-#        '../mordor/streams/crypto.cpp',
-#        '../mordor/streams/zlib.cpp',
-#        '../mordor/streams/ssl.cpp',
-#        '../mordor/streams/socket.cpp',
-#        '../mordor/http/basic.cpp',
-#        '../mordor/http/chunked.cpp',
-#        '../mordor/http/client.cpp',
-#        '../mordor/http/oauth2.cpp',
-#        '../mordor/http/http.cpp',
-#        '../mordor/http/oauth.cpp',
-#        '../mordor/http/servlet.cpp',
-#        '../mordor/http/auth.cpp',
-#        '../mordor/http/server.cpp',
-#        '../mordor/http/broker.cpp',
-#        '../mordor/http/digest.cpp',
-#        '../mordor/http/connection.cpp',
-#        '../mordor/http/servlets/config.cpp',
-#        '../mordor/http/multipart.cpp',
-#        '../mordor/http/proxy.cpp',
-#        '../mordor/xml/dom_parser.cpp',
       ],
       'conditions': [
+        ['OS == "linux"', {
+          'sources':[
+            '../mordor/iomanager_epoll.cpp',
+          ]
+        }],
+        ['OS == "mac"', {
+          'sources':[
+            '../mordor/iomanager_kqueue.cpp',
+          ]
+        }],
         ['OS == "win"', {
           'sources':[
+            '../mordor/eventloop.cpp',
+            '../mordor/runtime_linking.cpp',
+            '../mordor/iomanager_iocp.cpp',
             '../mordor/streams/handle.cpp',
             '../mordor/streams/efs.cpp',
             '../mordor/streams/namedpipe.cpp',
-#           '../mordor/http/negotiate.cpp',
           ]
         }],
       ],
-      'xcode_settings': {
-        'GCC_INLINES_ARE_PRIVATE_EXTERN': 'YES', # '-fvisibility-inlines-hidden'
-        'GCC_SYMBOLS_PRIVATE_EXTERN': 'YES', # '-fvisibility=hidden'
-      },
     },
     {
       'target_name': 'mordor_test',
@@ -227,7 +175,6 @@
       'type': 'executable',
       'dependencies': [
         'mordor_base',
-        'mordor_lib',
         'mordor_test',
       ],
       'sources': [
@@ -255,7 +202,6 @@
       'type': 'executable',
       'dependencies': [
         'mordor_base',
-        'mordor_lib',
         'mordor_test',
       ],
       'sources': [
@@ -272,7 +218,6 @@
       'type': 'executable',
       'dependencies': [
         'mordor_base',
-        'mordor_lib',
       ],
       'sources': [
         '../mordor/examples/cat.cpp',
