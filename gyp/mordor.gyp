@@ -28,8 +28,10 @@
       'GCC_VERSION': 'com.apple.compilers.llvm.clang.1_0',
       'GCC_PREFIX_HEADER': '../mordor/pch.h',
       'GCC_PRECOMPILE_PREFIX_HEADER': 'YES',
-      'CLANG_CXX_LANGUAGE_STANDARD': 'c++11',
+      'GCC_ENABLE_CPP_EXCEPTIONS': 'YES',        # -fno-exceptions
+      'GCC_ENABLE_CPP_RTTI': 'YES',              # -fno-rtti
       'MACOSX_DEPLOYMENT_TARGET': '10.8', # OS X Deployment Target: 10.8
+      'CLANG_CXX_LANGUAGE_STANDARD': 'c++11',
       'CLANG_CXX_LIBRARY': 'libc++', # libc++ requires OS X 10.7 or later
     },
     'conditions': [
