@@ -12,7 +12,11 @@
     ],
   },
   'target_defaults': {
-    'default_configuration': 'Debug',
+	'conditions': [
+      ['default_configuration == ""',{
+        'default_configuration': 'Debug',
+      }]
+    ],
 	'conditions': [
       ['target_arch == "arm"', {
         # arm

@@ -107,7 +107,7 @@ static void enableLogger(Logger::ptr logger,
     if (std::regex_match(logger->name(), verboseRegex))
         level = Log::VERBOSE;
     if (std::regex_match(logger->name(), debugRegex))
-        level = Log::DEBUG;
+        level = Log::DBG;
     if (std::regex_match(logger->name(), traceRegex))
         level = Log::TRACE;
 

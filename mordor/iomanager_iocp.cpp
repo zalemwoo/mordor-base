@@ -137,7 +137,7 @@ IOManager::WaitBlock::run()
 
     while (count) {
         dwRet = WaitForMultipleObjects(count, handles, FALSE, INFINITE);
-        MORDOR_LOG_LEVEL(g_logWaitBlock, dwRet == WAIT_FAILED ? Log::ERROR : Log::DEBUG)
+        MORDOR_LOG_LEVEL(g_logWaitBlock, dwRet == WAIT_FAILED ? Log::ERROR : Log::DBG)
             << this << " WaitForMultipleObjects(" << count << ", " << handles
             << "): " << dwRet << " (" << lastError() << ")";
         if (dwRet == WAIT_OBJECT_0) {
@@ -255,7 +255,7 @@ IOManager::registerFile(HANDLE handle)
     // Add the handle to the existing completion port
     MORDOR_ASSERT(m_hCompletionPort != INVALID_HANDLE_VALUE);
     HANDLE hRet = CreateIoCompletionPort(handle, m_hCompletionPort, 0, 0);
-    MORDOR_LOG_LEVEL(g_log, hRet ? Log::DEBUG : Log::ERROR) << this <<
+    MORDOR_LOG_LEVEL(g_log, hRet ? Log::DBG : Log::ERROR) << this <<
         " CreateIoCompletionPort(" << handle << ", " << m_hCompletionPort
         << "): " << hRet << " (" << (hRet ? ERROR_SUCCESS : lastError()) << ")";
     if (hRet != m_hCompletionPort) {
@@ -529,7 +529,7 @@ IOManager::tickle()
     // any real completed Async IO call, rather it is used to force the idle() method
     // out of a GetQueuedCompletionStatusEx status
     BOOL bRet = PostQueuedCompletionStatus(m_hCompletionPort, 0, ~0, NULL);
-    MORDOR_LOG_LEVEL(g_log, bRet ? Log::DEBUG : Log::ERROR) << this
+    MORDOR_LOG_LEVEL(g_log, bRet ? Log::DBG : Log::ERROR) << this
         << " PostQueuedCompletionStatus(" << m_hCompletionPort
         << ", 0, ~0, NULL): " << bRet << " (" << (bRet ? ERROR_SUCCESS : lastError()) << ")";
 

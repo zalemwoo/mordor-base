@@ -1,6 +1,6 @@
 // Copyright (c) 2009 - Mozy, Inc.
 
-#include "exception.h"
+#include "mordor/exception.h"
 
 #ifdef WINDOWS
 #include <dbghelp.h>

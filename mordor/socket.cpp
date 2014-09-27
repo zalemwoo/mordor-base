@@ -192,7 +192,7 @@ Socket::Socket(IOManager *ioManager, int family, int type, int protocol, int ini
     m_useConnectEx = g_useConnectEx->val(); //in case it is changed in the registry
     if (m_useAcceptEx && pAcceptEx && m_ioManager) {
         m_sock = socket(family, type, protocol);
-        MORDOR_LOG_LEVEL(g_log, m_sock == -1 ? Log::ERROR : Log::DEBUG) << this
+        MORDOR_LOG_LEVEL(g_log, m_sock == -1 ? Log::ERROR : Log::DBG) << this
             << " socket(" << (Family)family << ", " << (Type)type << ", "
             << (Protocol)protocol << "): " << m_sock << " (" << lastError()
             << ")";
@@ -562,7 +562,7 @@ void
 Socket::listen(int backlog)
 {
     int rc = ::listen(m_sock, backlog);
-    MORDOR_LOG_LEVEL(g_log, rc ? Log::ERROR : Log::DEBUG) << this << " listen("
+    MORDOR_LOG_LEVEL(g_log, rc ? Log::ERROR : Log::DBG) << this << " listen("
         << m_sock << ", " << backlog << "): " << rc << " (" << lastError()
         << ")";
     if (rc)
@@ -817,8 +817,8 @@ Socket::shutdown(int how)
 }
 
 #define MORDOR_SOCKET_LOG(result, error)                                        \
-    if (g_log->enabled(result == -1 ? Log::ERROR : Log::DEBUG)) {               \
-        LogEvent event = g_log->log(result == -1 ? Log::ERROR : Log::DEBUG,     \
+    if (g_log->enabled(result == -1 ? Log::ERROR : Log::DBG)) {               \
+        LogEvent event = g_log->log(result == -1 ? Log::ERROR : Log::DBG,     \
             __FILE__, __LINE__);                                                \
         event.os() << this << " " << api << "(" << m_sock << ", "              \
             << length;                                                          \

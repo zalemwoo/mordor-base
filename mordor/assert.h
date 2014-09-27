@@ -2,7 +2,7 @@
 #define __MORDOR_ASSERT_H__
 // Copyright (c) 2009 - Mozy, Inc.
 
-#include "exception.h"
+#include "mordor/exception.h"
 #include "log.h"
 #include "version.h"
 

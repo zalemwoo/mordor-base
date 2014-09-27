@@ -3,19 +3,19 @@
       'boost_include_path%': '<(boost_path)',
   },
   'includes': ['common.gypi'],
-	'conditions': [
-      ['OS == "mac"',{
-        'make_global_settings': [
-          ['CC','/opt/local/bin/clang++-mp-3.6'],
-          ['CXX','/opt/local/bin/clang++-mp-3.6'],
-          ['LINK','/opt/local/bin/clang++-mp-3.6'],
-        ],
-      }],
-	],
+  'conditions': [
+    ['OS == "mac"',{
+      'make_global_settings': [
+        ['CC','/opt/local/bin/clang++-mp-3.6'],
+        ['CXX','/opt/local/bin/clang++-mp-3.6'],
+        ['LINK','/opt/local/bin/clang++-mp-3.6'],
+      ],
+    }],
+  ],
   'target_defaults': {
     'include_dirs': [
       '..',
-      'boost_include_path',
+      '<(boost_include_path)',
     ],
     'msvs_settings': {
 #     'msvs_precompiled_header': '../mordor/pch.h',
@@ -46,12 +46,14 @@
       }],
       ['OS == "linux"',{
         "link_settings": {
+          "ldflags": [ '-pthread' ],
           "libraries": [
             '-lpthread',
           ],
         },
       }],
       ['OS != "win"',{
+        "cflags_cc!": ['-fno-exceptions', '-fno-rtti'],
         "link_settings": {
           "libraries": [
 #            '-L /usr/local/lib',
@@ -61,10 +63,9 @@
 #            '-lboost_system',
 #            '-llzma',
 #            '-lz',
-#            '-lpthread',
           ],
         },
-        'cflags': ['-include ../mordor/pch.h'],
+        'cflags': ['-include <!(pwd)/../mordor/pch.h'],
       }],
     ],
   },

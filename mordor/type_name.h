@@ -14,7 +14,6 @@ std::string demangle(const char* name);
 
 template <class T>
 std::string type_name(const T& t) {
-
     return demangle(typeid(t).name());
 }
 

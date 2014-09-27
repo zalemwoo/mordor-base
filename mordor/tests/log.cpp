@@ -118,9 +118,9 @@ MORDOR_UNITTEST(Log, levelPropagate)
     Logger::ptr l = Log::lookup("app:logger");
     Logger::ptr l2 = Log::lookup("app");
 
-    MORDOR_TEST_ASSERT_NOT_EQUAL(l->level(), Log::DEBUG);
-    l2->level(Log::DEBUG);
-    MORDOR_TEST_ASSERT_EQUAL(l->level(), Log::DEBUG);
+    MORDOR_TEST_ASSERT_NOT_EQUAL(l->level(), Log::DBG);
+    l2->level(Log::DBG);
+    MORDOR_TEST_ASSERT_EQUAL(l->level(), Log::DBG);
 }
 
 MORDOR_UNITTEST(Log, levelNoPropagate)
@@ -128,7 +128,7 @@ MORDOR_UNITTEST(Log, levelNoPropagate)
     Logger::ptr l = Log::lookup("app2:logger");
     Logger::ptr l2 = Log::lookup("app2");
 
-    MORDOR_TEST_ASSERT_NOT_EQUAL(l->level(), Log::DEBUG);
-    l2->level(Log::DEBUG, false);
-    MORDOR_TEST_ASSERT_NOT_EQUAL(l->level(), Log::DEBUG);
+    MORDOR_TEST_ASSERT_NOT_EQUAL(l->level(), Log::DBG);
+    l2->level(Log::DBG, false);
+    MORDOR_TEST_ASSERT_NOT_EQUAL(l->level(), Log::DBG);
 }

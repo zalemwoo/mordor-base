@@ -120,7 +120,7 @@ HandleStream::read(void *buffer, size_t length)
     }
     length = (std::min)(length, m_maxOpSize);
     BOOL ret = ReadFile(m_hFile, buffer, (DWORD)length, &read, overlapped);
-    Log::Level level = Log::DEBUG;
+    Log::Level level = Log::DBG;
     if (!ret) {
         if (lastError() == ERROR_HANDLE_EOF) {
         } else if (m_ioManager) {
@@ -198,7 +198,7 @@ HandleStream::write(const void *buffer, size_t length)
     }
     length = (std::min)(length, m_maxOpSize);
     BOOL ret = WriteFile(m_hFile, buffer, (DWORD)length, &written, overlapped);
-    Log::Level level = Log::DEBUG;
+    Log::Level level = Log::DBG;
     if (!ret) {
         if (m_ioManager && lastError() == ERROR_IO_PENDING)
             level = Log::TRACE;

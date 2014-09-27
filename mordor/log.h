@@ -87,7 +87,7 @@ public:
 
         /// Normally only useful for debugging, logs most calls a component
         /// makes
-        DEBUG,
+        DBG,
 
         /// Normally only useful for debugging, logs everything under the sun,
         /// including every call a component makes, and possibly details about
@@ -345,7 +345,7 @@ private:
 /// Log a verbose message
 #define MORDOR_LOG_VERBOSE(log) MORDOR_LOG_LEVEL(log, ::Mordor::Log::VERBOSE)
 /// Log a debug message
-#define MORDOR_LOG_DEBUG(log) MORDOR_LOG_LEVEL(log, ::Mordor::Log::DEBUG)
+#define MORDOR_LOG_DEBUG(log) MORDOR_LOG_LEVEL(log, ::Mordor::Log::DBG)
 /// Log a trace message
 #define MORDOR_LOG_TRACE(log) MORDOR_LOG_LEVEL(log, ::Mordor::Log::TRACE)
 /// @}

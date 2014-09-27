@@ -89,7 +89,7 @@ FDStream::read(Buffer &buffer, size_t length)
         rc = readv(m_fd, &iovs[0], iovs.size());
     }
     error_t error = lastError();
-    MORDOR_LOG_LEVEL(g_log, rc < 0 ? Log::ERROR : Log::DEBUG) << this
+    MORDOR_LOG_LEVEL(g_log, rc < 0 ? Log::ERROR : Log::DBG) << this
         << " readv(" << m_fd << ", " << length << "): " << rc << " (" << error
         << ")";
     if (rc < 0)
@@ -114,7 +114,7 @@ FDStream::read(void *buffer, size_t length)
         rc = ::read(m_fd, buffer, length);
     }
     error_t error = lastError();
-    MORDOR_LOG_LEVEL(g_log, rc < 0 ? Log::ERROR : Log::DEBUG) << this
+    MORDOR_LOG_LEVEL(g_log, rc < 0 ? Log::ERROR : Log::DBG) << this
         << " read(" << m_fd << ", " << length << "): " << rc << " (" << error
         << ")";
     if (rc < 0)
@@ -139,7 +139,7 @@ FDStream::write(const Buffer &buffer, size_t length)
         Scheduler::yieldTo();
     }
     error_t error = lastError();
-    MORDOR_LOG_LEVEL(g_log, rc < 0 ? Log::ERROR : Log::DEBUG) << this
+    MORDOR_LOG_LEVEL(g_log, rc < 0 ? Log::ERROR : Log::DBG) << this
         << " writev(" << m_fd << ", " << length << "): " << rc << " (" << error
         << ")";
     if (rc == 0)
@@ -165,7 +165,7 @@ FDStream::write(const void *buffer, size_t length)
         rc = ::write(m_fd, buffer, length);
     }
     error_t error = lastError();
-    MORDOR_LOG_LEVEL(g_log, rc < 0 ? Log::ERROR : Log::DEBUG) << this
+    MORDOR_LOG_LEVEL(g_log, rc < 0 ? Log::ERROR : Log::DBG) << this
         << " write(" << m_fd << ", " << length << "): " << rc << " (" << error
         << ")";
     if (rc == 0)
