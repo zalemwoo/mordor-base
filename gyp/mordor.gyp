@@ -1,4 +1,7 @@
 {
+  'variables': {
+      'boost_include_path%': '<(boost_path)',
+  },
   'includes': ['common.gypi'],
 	'conditions': [
       ['OS == "mac"',{
@@ -10,6 +13,10 @@
       }],
 	],
   'target_defaults': {
+    'include_dirs': [
+      '..',
+      'boost_include_path',
+    ],
     'msvs_settings': {
 #     'msvs_precompiled_header': '../mordor/pch.h',
 #     'msvs_precompiled_source': '../mordor/pch.cpp',
@@ -58,10 +65,6 @@
           ],
         },
         'cflags': ['-include ../mordor/pch.h'],
-        'include_dirs': [
-          '..',
-          '../deps',
-        ],
       }],
     ],
   },
@@ -156,9 +159,6 @@
       'type': 'static_library',
       'dependencies': [
         'mordor_base',
-      ],
-      'include_dirs': [
-        '..',
       ],
       'sources': [
         '../mordor/test/stdoutlistener.cpp',
