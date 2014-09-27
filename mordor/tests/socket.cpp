@@ -3,7 +3,6 @@
 #include <iostream>
 
 #include <boost/lexical_cast.hpp>
-#include <boost/scoped_array.hpp>
 
 #include "mordor/exception.h"
 #include "mordor/fiber.h"
@@ -272,7 +271,7 @@ MORDOR_UNITTEST(Socket, cancelSend)
     conns.connect->connect(conns.address);
     ioManager.dispatch();
 
-    boost::scoped_array<char> array(new char[65536]);
+    std::unique_ptr<char[]> array(new char[65536]);
     memset(array.get(), 1, 65536);
     struct iovec iov;
     iov.iov_base = array.get();
