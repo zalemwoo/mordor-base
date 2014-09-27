@@ -2,8 +2,6 @@
 
 #include "stream.h"
 
-#include <boost/scoped_array.hpp>
-
 #include <string.h>
 
 #include "buffer.h"
@@ -44,7 +42,7 @@ Stream::read(void *buffer, size_t length)
     }
     // We have to allocate *another* buffer so we don't destroy any data while
     // copying to our buffer
-    boost::scoped_array<unsigned char> extraBuffer(new unsigned char[result]);
+    std::unique_ptr<unsigned char[]> extraBuffer(new unsigned char[result]);
     internalBuffer.copyOut(extraBuffer.get(), result);
     memcpy(buffer, extraBuffer.get(), result);
     return result;
