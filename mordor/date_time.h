@@ -5,9 +5,9 @@
 #include <chrono>
 
 namespace Mordor {
-   inline time_t toTimeT(const std::chrono::system_clock::time_point &ptime)
+   inline time_t toTimeT(const std::chrono::system_clock::time_point &tp)
    {
-       return std::chrono::system_clock::to_time_t(ptime);
+       return std::chrono::system_clock::to_time_t(tp);
    }
 };
 

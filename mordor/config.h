@@ -24,10 +24,11 @@ namespace Mordor {
 class IOManager;
 #endif
 
+#if 0 // Zs
 namespace JSON {
 class Value;
 }
-
+#endif // Ze
 
 /*
 Configuration Variables (ConfigVars) are a mechanism for configuring the
@@ -309,7 +310,7 @@ public:
     // Update value of ConfigVars based on json object.
     // If a config var not declared previously,
     // we will create a new var to save it.
-    static void loadFromJSON(const JSON::Value &json);
+//    static void loadFromJSON(const JSON::Value &json); // Z no JSON
 #ifdef WINDOWS
     static void loadFromRegistry(HKEY key, const std::string &subKey);
     static void loadFromRegistry(HKEY key, const std::wstring &subKey);

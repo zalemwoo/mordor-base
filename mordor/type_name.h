@@ -4,6 +4,10 @@
 #include <string>
 #include <typeinfo>
 
+/**
+ * see: http://stackoverflow.com/questions/281818/unmangling-the-result-of-stdtype-infoname
+ */
+
 namespace Mordor{
 
 std::string demangle(const char* name);
