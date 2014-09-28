@@ -30,7 +30,7 @@
       'GCC_PRECOMPILE_PREFIX_HEADER': 'YES',
       'GCC_ENABLE_CPP_EXCEPTIONS': 'YES',        # -fno-exceptions
       'GCC_ENABLE_CPP_RTTI': 'YES',              # -fno-rtti
-      'MACOSX_DEPLOYMENT_TARGET': '10.8', # OS X Deployment Target: 10.8
+      'MACOSX_DEPLOYMENT_TARGET': '10.8',        # OS X Deployment Target: 10.8
       'CLANG_CXX_LANGUAGE_STANDARD': 'c++11',
       'CLANG_CXX_LIBRARY': 'libc++', # libc++ requires OS X 10.7 or later
     },
@@ -142,7 +142,11 @@
         ['OS == "mac"', {
           'sources':[
             '../mordor/iomanager_kqueue.cpp',
-          ]
+          ],
+          'xcode_settings': {
+            'GCC_ENABLE_CPP_EXCEPTIONS': 'YES',        # -fno-exceptions
+            'GCC_ENABLE_CPP_RTTI': 'YES',              # -fno-rtti
+          },
         }],
         ['OS == "win"', {
           'sources':[
@@ -170,6 +174,8 @@
         '../mordor/test/compoundlistener.cpp',
       ],
       'xcode_settings': {
+        'GCC_ENABLE_CPP_EXCEPTIONS': 'YES',        # -fno-exceptions
+        'GCC_ENABLE_CPP_RTTI': 'YES',              # -fno-rtti
       },
     }, # mordor_test
     {
@@ -212,6 +218,10 @@
         '../mordor/tests/transfer_stream.cpp',
         '../mordor/tests/run_tests.cpp',
       ],
+      'xcode_settings': {
+        'GCC_ENABLE_CPP_EXCEPTIONS': 'YES',        # -fno-exceptions
+        'GCC_ENABLE_CPP_RTTI': 'YES',              # -fno-rtti
+      },
     }, # tests
     {
       'target_name': 'cat',
@@ -223,6 +233,10 @@
       'sources': [
         '../mordor/examples/cat.cpp',
       ],
+      'xcode_settings': {
+        'GCC_ENABLE_CPP_EXCEPTIONS': 'YES',        # -fno-exceptions
+        'GCC_ENABLE_CPP_RTTI': 'YES',              # -fno-rtti
+      },
     }, # cat
   ] # targets
 }
