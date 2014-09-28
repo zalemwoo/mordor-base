@@ -3,15 +3,15 @@
       'boost_include_path%': '<(boost_path)',
   },
   'includes': ['common.gypi'],
-  'conditions': [
-    ['OS == "mac"',{
-      'make_global_settings': [
-        ['CC','/opt/local/bin/clang++-mp-3.6'],
-        ['CXX','/opt/local/bin/clang++-mp-3.6'],
-        ['LINK','/opt/local/bin/clang++-mp-3.6'],
-      ],
-    }],
-  ],
+#  'conditions': [
+#    ['OS == "mac"',{
+#      'make_global_settings': [
+#        ['CC','/opt/local/bin/clang++-mp-3.6'],
+#        ['CXX','/opt/local/bin/clang++-mp-3.6'],
+#        ['LINK','/opt/local/bin/clang++-mp-3.6'],
+#      ],
+#    }],
+#  ],
   'target_defaults': {
     'include_dirs': [
       '..',
