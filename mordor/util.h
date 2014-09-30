@@ -2,6 +2,8 @@
 #define __MORDOR_UTIL_H__
 // Copyright (c) 2009 - Mozy, Inc.
 
+#include <memory>
+
 #include "version.h"
 
 #ifdef OSX
