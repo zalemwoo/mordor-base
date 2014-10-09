@@ -21,11 +21,9 @@ MORDOR_UNITTEST(String, dataFromHexstring)
         std::invalid_argument);
 }
 
-#if 0 // Zs
 MORDOR_UNITTEST(String, sha0sum)
 {
     MORDOR_TEST_ASSERT_EQUAL(hexstringFromData(sha0sum("")), "f96cea198ad1dd5617ac084a3d92c6107708c0ef");
     MORDOR_TEST_ASSERT_EQUAL(hexstringFromData(sha0sum("1234567890")), "786abc00fc4c0ab7ea5f0f2bd85fb9ab00c2ad82");
     MORDOR_TEST_ASSERT_EQUAL(hexstringFromData(sha0sum((const void *)"\x7e\x54\xe4\xbc\x27\x00\x40\xab", 8)), "ea1d7982eb4c6201498ece16539ce174735b6a21");
 }
-#endif // Ze

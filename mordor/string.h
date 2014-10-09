@@ -18,7 +18,6 @@ std::string base64decode(const std::string &src);
 std::string base64encode(const std::string &data);
 std::string base64encode(const void *data, size_t len);
 
-#if 0 // Zs
 // Returns result in hex
 std::string md5(const std::string &data);
 std::string sha1(const std::string &data);
@@ -32,7 +31,6 @@ std::string sha1sum(const void *data, size_t len);
 std::string hmacMd5(const std::string &text, const std::string &key);
 std::string hmacSha1(const std::string &text, const std::string &key);
 std::string hmacSha256(const std::string &text, const std::string &key);
-#endif // Ze
 
 /// Output must be of size len * 2, and will *not* be null-terminated
 void hexstringFromData(const void *data, size_t len, char *output);

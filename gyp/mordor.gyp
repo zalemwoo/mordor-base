@@ -1,6 +1,7 @@
 {
   'variables': {
       'boost_include_path%': '<(boost_path)',
+      'openssl_include_path%': '<(openssl_path)',
   },
   'includes': ['common.gypi'],
 #  'conditions': [
@@ -16,6 +17,7 @@
     'include_dirs': [
       '..',
       '<(boost_include_path)',
+      '<(openssl_include_path)',
     ],
     'msvs_settings': {
 #     'msvs_precompiled_header': '../mordor/pch.h',
@@ -32,7 +34,10 @@
       'GCC_ENABLE_CPP_RTTI': 'YES',              # -fno-rtti
       'MACOSX_DEPLOYMENT_TARGET': '10.8',        # OS X Deployment Target: 10.8
       'CLANG_CXX_LANGUAGE_STANDARD': 'c++11',
-      'CLANG_CXX_LIBRARY': 'libc++', # libc++ requires OS X 10.7 or later
+      'CLANG_CXX_LIBRARY': 'libc++',             # libc++ requires OS X 10.7 or later
+      'OTHER_LDFLAGS': [
+        '-Wl,-force_load,<(PRODUCT_DIR)/libopenssl.a',
+       ],
     },
     'conditions': [
       ['OS == "mac"',{
@@ -46,11 +51,17 @@
           ],
         },
       }],
+      ['OS in "linux freebsd"', {
+        'ldflags': [
+          '-Wl,--whole-archive <(PRODUCT_DIR)/libopenssl.a -Wl,--no-whole-archive',
+         ],
+      }],
       ['OS == "linux"',{
         "link_settings": {
           "ldflags": [ '-pthread' ],
           "libraries": [
             '-lpthread',
+            '-ldl',
           ],
         },
       }],
@@ -115,11 +126,13 @@
         '../mordor/streams/buffered.cpp',
         '../mordor/streams/cat.cpp',
         '../mordor/streams/counter.cpp',
+        '../mordor/streams/crypto.cpp',
         '../mordor/streams/stream.cpp',
         '../mordor/streams/std.cpp',
         '../mordor/streams/fd.cpp',
         '../mordor/streams/file.cpp',
         '../mordor/streams/filter.cpp',
+        '../mordor/streams/hash.cpp',
         '../mordor/streams/limited.cpp',
         '../mordor/streams/memory.cpp',
         '../mordor/streams/null.cpp',
@@ -127,7 +140,9 @@
         '../mordor/streams/timeout.cpp',
         '../mordor/streams/singleplex.cpp',
         '../mordor/streams/socket_stream.cpp',
+        '../mordor/streams/ssl.cpp',
         '../mordor/streams/pipe.cpp',
+        '../mordor/streams/random.cpp',
         '../mordor/streams/transfer.cpp',
         '../mordor/streams/throttle.cpp',
         '../mordor/streams/test.cpp',
@@ -191,6 +206,7 @@
         '../mordor/tests/buffer.cpp',
         '../mordor/tests/config.cpp',
         '../mordor/tests/coroutine.cpp',
+        '../mordor/tests/crypto.cpp',
         '../mordor/tests/endian.cpp',
         '../mordor/tests/fibers.cpp',
         '../mordor/tests/fibersync.cpp',
@@ -210,9 +226,11 @@
         '../mordor/tests/buffered_stream.cpp',
         '../mordor/tests/counter_stream.cpp',
         '../mordor/tests/file_stream.cpp',
+        '../mordor/tests/hash_stream.cpp',
         '../mordor/tests/memory_stream.cpp',
 #        '../mordor/tests/notify_stream.cpp',
         '../mordor/tests/pipe_stream.cpp',
+        '../mordor/tests/ssl_stream.cpp',
         '../mordor/tests/temp_stream.cpp',
 #        '../mordor/tests/timeout_stream.cpp',
         '../mordor/tests/transfer_stream.cpp',
