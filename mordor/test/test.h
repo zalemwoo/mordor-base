@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "mordor/assert.h"
+#include "mordor/exception.h"
 
 namespace Mordor {
 namespace Test {
@@ -176,6 +177,7 @@ MORDOR_NO_SERIALIZE_BARE(std::vector<T>)
             "Expected " + std::string(typeid(exception).name()) +               \
             " from " #code);                                                    \
     } catch (exception &) {                                                     \
+    } catch (::Mordor::ErrorInfo<exception> &) {                                \
     }
 
 #define MORDOR_TEST_ASSERT_ANY_EXCEPTION(code)                                  \
@@ -194,9 +196,12 @@ MORDOR_NO_SERIALIZE_BARE(std::vector<T>)
             __selfAsserted = true;                                              \
             ::Mordor::Test::assertion(__FILE__, __LINE__,                       \
                 BOOST_CURRENT_FUNCTION, "Expected Assertion from " #code);      \
-    } catch (::Mordor::Assertion &) {                                           \
-            if (__selfAsserted)                                                 \
-                throw;                                                          \
+        } catch (::Mordor::Assertion &) {                                           \
+                if (__selfAsserted)                                                 \
+                    throw;                                                      \
+        } catch (const ::Mordor::ErrorInfo<::Mordor::Assertion> &) {               \
+                if (__selfAsserted)                                                 \
+                    throw;                                                          \
         }                                                                       \
     }
 

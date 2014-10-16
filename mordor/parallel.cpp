@@ -15,18 +15,15 @@ static Logger::ptr g_log = Log::lookup("mordor:parallel");
 static
 void
 parallel_do_impl(std::function<void ()> dg, size_t &completed,
-    size_t total, boost::exception_ptr &exception, Scheduler *scheduler,
+    size_t total, std::exception_ptr &exception, Scheduler *scheduler,
     Fiber::ptr caller, FiberSemaphore *sem)
 {
     if (sem)
         sem->wait();
     try {
         dg();
-    } catch (boost::exception &ex) {
-        removeTopFrames(ex);
-        exception = boost::current_exception();
     } catch (...) {
-        exception = boost::current_exception();
+        exception = std::current_exception();
     }
     if (sem)
         sem->notify();
@@ -56,7 +53,7 @@ parallel_do(const std::vector<std::function<void ()> > &dgs,
         sem.reset(new FiberSemaphore(parallelism));
 
     std::vector<Fiber::ptr> fibers;
-    std::vector<boost::exception_ptr> exceptions;
+    std::vector<std::exception_ptr> exceptions;
     fibers.reserve(dgs.size());
     exceptions.resize(dgs.size());
     for(size_t i = 0; i < dgs.size(); ++i) {
@@ -70,7 +67,7 @@ parallel_do(const std::vector<std::function<void ()> > &dgs,
     Scheduler::yieldTo();
     // Pass the first exception along
     // TODO: group exceptions?
-    for(std::vector<boost::exception_ptr>::iterator it2 = exceptions.begin();
+    for(std::vector<std::exception_ptr>::iterator it2 = exceptions.begin();
         it2 != exceptions.end();
         ++it2) {
         if (*it2)
@@ -101,7 +98,7 @@ parallel_do(const std::vector<std::function<void ()> > &dgs,
     if (parallelism != -1)
         sem.reset(new FiberSemaphore(parallelism));
 
-    std::vector<boost::exception_ptr> exceptions;
+    std::vector<std::exception_ptr> exceptions;
     exceptions.resize(dgs.size());
     for(size_t i = 0; i < dgs.size(); ++i) {
         fibers[i]->reset(std::bind(&parallel_do_impl, dgs[i],

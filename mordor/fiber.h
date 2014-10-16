@@ -3,6 +3,7 @@
 // Copyright (c) 2009 - Mozy, Inc.
 
 #include <list>
+#include <exception>
 
 #include "util.h"
 #include "exception.h"
@@ -116,7 +117,7 @@ public:
     /// yieldTo(), exception is rethrown in the Fiber
     /// @param exception The exception to be rethrown in the Fiber
     /// @pre state() == INIT || state() == HOLD
-    void inject(boost::exception_ptr exception);
+    void inject(std::exception_ptr exception);
 
     /// Yield execution to a specific Fiber
 
@@ -185,16 +186,17 @@ private:
     State m_state, m_yielderNextState;
     ptr m_outer, m_yielder;
     weak_ptr m_terminateOuter;
-    boost::exception_ptr m_exception;
+    std::exception_ptr m_exception;
 
     static ThreadLocalStorage<Fiber *> t_fiber;
 
+public:
     // FLS Support
     static size_t flsAlloc();
     static void flsFree(size_t key);
     static void flsSet(size_t key, intptr_t value);
     static intptr_t flsGet(size_t key);
-
+private:
     std::vector<intptr_t> m_fls;
 };
 

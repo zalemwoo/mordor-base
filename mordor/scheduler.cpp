@@ -265,10 +265,9 @@ Scheduler::run()
                     --m_activeThreadCount;
                 // Kill off the idle fiber
                 try {
-                    throw boost::enable_current_exception(
-                        OperationAbortedException());
+                    throw new OperationAbortedException();
                 } catch(...) {
-                    idleFiber->inject(boost::current_exception());
+                    idleFiber->inject(std::current_exception());
                 }
                 // Detach our thread
                 for (std::vector<std::shared_ptr<Thread> >

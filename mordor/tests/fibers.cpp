@@ -6,7 +6,7 @@
 using namespace Mordor;
 using namespace Mordor::Test;
 
-struct DummyException : public boost::exception, public std::exception
+struct DummyException : public std::exception
 {
     ~DummyException() throw() {}
 };
@@ -447,17 +447,18 @@ MORDOR_UNITTEST(Fibers, fiberThrowingExceptionOutOfScope)
         fiber->call();
         MORDOR_NOTREACHED();
     } catch (DummyException &) {
+    } catch (const Mordor::ErrorInfo<DummyException> &) {
     }
 }
 
 MORDOR_UNITTEST(Fibers, forceThrowExceptionNewFiberCall)
 {
     Fiber::ptr f(new Fiber(&throwRuntimeError));
-    boost::exception_ptr exception;
+    std::exception_ptr exception;
     try {
-        throw boost::enable_current_exception(DummyException());
+        throw DummyException();
     } catch (...) {
-        exception = boost::current_exception();
+        exception = std::current_exception();
     }
     MORDOR_TEST_ASSERT_EXCEPTION(f->inject(exception), DummyException);
 }
@@ -476,11 +477,11 @@ static void catchAndThrowDummy()
 MORDOR_UNITTEST(Fibers, forceThrowExceptionFiberYield)
 {
     Fiber::ptr f(new Fiber(&catchAndThrowDummy));
-    boost::exception_ptr exception;
+    std::exception_ptr exception;
     try {
-        throw boost::enable_current_exception(DummyException());
+        throw DummyException();
     } catch (...) {
-        exception = boost::current_exception();
+        exception = std::current_exception();
     }
     f->call();
     MORDOR_TEST_ASSERT_EXCEPTION(f->inject(exception), DummyException);
@@ -502,11 +503,11 @@ MORDOR_UNITTEST(Fibers, forceThrowExceptionFiberYieldTo)
     Fiber::ptr mainFiber = Fiber::getThis();
     Fiber::ptr f(new Fiber(std::bind(&catchAndThrowDummyYieldTo,
         mainFiber)));
-    boost::exception_ptr exception;
+    std::exception_ptr exception;
     try {
-        throw boost::enable_current_exception(DummyException());
+        throw DummyException();
     } catch (...) {
-        exception = boost::current_exception();
+        exception = std::current_exception();
     }
     f->yieldTo();
     MORDOR_TEST_ASSERT_EXCEPTION(f->inject(exception), DummyException);
@@ -596,6 +597,8 @@ MORDOR_UNITTEST(Fibers, exceptionDestructsBeforeFiberDestructs)
             throwingFiber->call();
             MORDOR_NOTREACHED();
         } catch (ExceptionDestructsBeforeFiberDestructsException &) {
+            MORDOR_TEST_ASSERT_EQUAL(++sequence, 4);
+        } catch (const Mordor::ErrorInfo<ExceptionDestructsBeforeFiberDestructsException> &) {
             MORDOR_TEST_ASSERT_EQUAL(++sequence, 4);
         }
         MORDOR_TEST_ASSERT_EQUAL(++sequence, 5);

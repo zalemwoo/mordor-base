@@ -54,17 +54,29 @@ void
 StdoutListener::testAsserted(const std::string &suite, const std::string &test,
                              const Assertion &assertion)
 {
-    std::cerr << "Assertion: "
-        << boost::current_exception_diagnostic_information() << std::endl;
-    m_failures.push_back(std::make_pair(suite, test));
+    std::exception_ptr eptr = std::current_exception();
+    try {
+        if (eptr) {
+            std::rethrow_exception(eptr);
+        }
+    } catch (const std::exception& e) {
+        std::cerr << "Accertion: " << std::endl << e.what() << std::endl;
+        m_failures.push_back(std::make_pair(suite, test));
+    }
 }
 
-void
-StdoutListener::testException(const std::string &suite, const std::string &test)
+void StdoutListener::testException(const std::string &suite, const std::string &test)
 {
-    std::cerr << "Unexpected exception: "
-        << boost::current_exception_diagnostic_information() << std::endl;
-    m_failures.push_back(std::make_pair(suite, test));
+    std::exception_ptr eptr = std::current_exception();
+    try {
+        if (eptr) {
+            std::rethrow_exception(eptr);
+        }
+    } catch (const std::exception& e) {
+        std::cerr << "Unexpected exception: " << std::endl << e.what() << std::endl;
+        m_failures.push_back(std::make_pair(suite, test));
+    }
+
 }
 
 void

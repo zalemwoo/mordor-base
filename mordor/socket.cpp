@@ -1319,30 +1319,35 @@ static void throwGaiException(int error)
 {
     switch (error) {
         case EAI_AGAIN:
-            MORDOR_THROW_EXCEPTION(TemporaryNameServerFailureException()
-                << errinfo_gaierror(error)
-                << boost::errinfo_api_function("getaddrinfo"));
+            MORDOR_THROW_EXCEPTION_WITH_ERROR(TemporaryNameServerFailureException());
+            // MORDOR_THROW_EXCEPTION(TemporaryNameServerFailureException()
+              //  << errinfo_gaierror(error)
+              //  << boost::errinfo_api_function("getaddrinfo"));
         case EAI_FAIL:
-            MORDOR_THROW_EXCEPTION(PermanentNameServerFailureException()
-                << errinfo_gaierror(error)
-                << boost::errinfo_api_function("getaddrinfo"));
+            MORDOR_THROW_EXCEPTION_WITH_ERROR(PermanentNameServerFailureException());
+            // MORDOR_THROW_EXCEPTION(PermanentNameServerFailureException()
+              //  << errinfo_gaierror(error)
+              //  << boost::errinfo_api_function("getaddrinfo"));
 #if defined(WSANO_DATA) || defined(EAI_NODATA)
         case MORDOR_NATIVE(WSANO_DATA, EAI_NODATA):
-            MORDOR_THROW_EXCEPTION(NoNameServerDataException()
-                << errinfo_gaierror(error)
-                << boost::errinfo_api_function("getaddrinfo"));
+            MORDOR_THROW_EXCEPTION_WITH_ERROR(NoNameServerDataException());
+            // MORDOR_THROW_EXCEPTION(NoNameServerDataException()
+              //  << errinfo_gaierror(error)
+              //  << boost::errinfo_api_function("getaddrinfo"));
 #endif
         case EAI_NONAME:
-            MORDOR_THROW_EXCEPTION(HostNotFoundException()
-                << errinfo_gaierror(error)
-                << boost::errinfo_api_function("getaddrinfo"));
+            MORDOR_THROW_EXCEPTION_WITH_ERROR(HostNotFoundException());
+            // MORDOR_THROW_EXCEPTION(HostNotFoundException()
+              //  << errinfo_gaierror(error)
+              //  << boost::errinfo_api_function("getaddrinfo"));
 #ifdef EAI_ADDRFAMILY
         case EAI_ADDRFAMILY:
 #endif
         case EAI_FAMILY:
-            MORDOR_THROW_EXCEPTION(OperationNotSupportedException()
-                << errinfo_gaierror(error)
-                << boost::errinfo_api_function("getaddrinfo"));
+            MORDOR_THROW_EXCEPTION_WITH_ERROR(OperationNotSupportedException());
+            // MORDOR_THROW_EXCEPTION(OperationNotSupportedException()
+              //  << errinfo_gaierror(error)
+              //  << boost::errinfo_api_function("getaddrinfo"));
         case EAI_BADFLAGS:
         case EAI_MEMORY:
         case EAI_SERVICE:
@@ -1351,9 +1356,10 @@ static void throwGaiException(int error)
         case EAI_SYSTEM:
 #endif
         default:
-            MORDOR_THROW_EXCEPTION(NameLookupException()
-                << errinfo_gaierror(error)
-                << boost::errinfo_api_function("getaddrinfo"));
+            MORDOR_THROW_EXCEPTION_WITH_ERROR(NameLookupException());
+            // MORDOR_THROW_EXCEPTION(NameLookupException()
+              //  << errinfo_gaierror(error)
+              //  << boost::errinfo_api_function("getaddrinfo"));
     }
 }
 

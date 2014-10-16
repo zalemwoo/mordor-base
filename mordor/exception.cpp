@@ -46,6 +46,39 @@ static struct Initializer {
 }
 #endif
 
+#ifdef POSIX
+std::string dump_backtrace()
+{
+    std::ostringstream os;
+    void* trace[100];
+    int size = ::backtrace(trace, 100);
+    char** symbols = ::backtrace_symbols(trace, size);
+    os << "==== C stack trace ===============================\n";
+    if (size == 0) {
+        os << "(empty)\n";
+    } else if (symbols == NULL) {
+        os << "(no symbols)\n";
+    } else {
+        for (int i = 1; i < size; ++i) {
+            os << std::fixed << std::setw(2) << std::setfill('0') << i << " : ";
+            char mangled[201];
+            if (sscanf(symbols[i], "%*[^(]%*[(]%200[^)+]", mangled) == 1) {  // NOLINT
+                int status;
+                size_t length;
+                char* demangled = abi::__cxa_demangle(mangled, NULL, &length, &status);
+                os << ((demangled != NULL) ? demangled : mangled);
+                os << std::endl;
+                free(demangled);
+            } else {
+                os << "??" << std::endl;
+            }
+        }
+    }
+    free(symbols);
+    return os.str();
+}
+#endif
+
 std::string to_string(const std::vector<void *> backtrace)
 {
 #ifdef WINDOWS
@@ -91,24 +124,12 @@ std::string to_string(const std::vector<void *> backtrace)
     return os.str();
 }
 
-std::string to_string( errinfo_backtrace const &bt )
-{
-    return to_string(bt.value());
-}
-
-#ifdef WINDOWS
-std::string to_string( errinfo_lasterror const &e)
-{
-    return boost::lexical_cast<std::string>(e.value());
-}
-#else
 std::string to_string( errinfo_gaierror const &e)
 {
     std::ostringstream os;
     os << e.value() << ", \"" << gai_strerror(e.value()) << "\"";
     return os.str();
 }
-#endif
 
 std::vector<void *> backtrace(int framesToSkip)
 {
@@ -127,42 +148,14 @@ std::vector<void *> backtrace(int framesToSkip)
     return result;
 }
 
-void removeTopFrames(boost::exception &ex, int framesToSkip)
-{
-#if 1 // Zs
-    const std::vector<void *> *oldbt = boost::get_error_info<errinfo_backtrace>(ex);
-    if (oldbt && !oldbt->empty()) {
-        std::vector<void *> newbt(*oldbt);
-        std::vector<void *> bt = backtrace();
-        size_t count = 0;
-        ++framesToSkip;
-        for (; count + framesToSkip < newbt.size() &&
-            count + framesToSkip < bt.size(); ++count) {
-            if (bt[bt.size() - count - 1] != newbt[newbt.size() - count - 1])
-                break;
-        }
-        count -= framesToSkip;
-        newbt.resize(newbt.size() > count ? newbt.size() - count : 0);
-        ex << errinfo_backtrace(newbt);
-    }
-#endif // Zs
-}
-
-void rethrow_exception(boost::exception_ptr const & ep)
+void rethrow_exception(std::exception_ptr const & ep)
 {
     // Take the backtrace from here, to avoid additional frames from the
     // exception handler
     std::vector<void *> bt = backtrace(1);
     try {
-        boost::rethrow_exception(ep);
-    } catch (boost::exception &e) {
-#if 1 // Zs
-        const std::vector<void *> *oldbt =
-            boost::get_error_info<errinfo_backtrace>(e);
-        if (oldbt)
-            bt.insert(bt.begin(), oldbt->begin(), oldbt->end());
-        e << errinfo_backtrace(bt);
-#endif // Zs
+        std::rethrow_exception(ep);
+    } catch (std::exception &e) {
         throw;
     }
 }
@@ -177,8 +170,7 @@ static void throwSocketException(error_t error)
 {
     switch (error) {
         case WSA(EAFNOSUPPORT):
-            throw boost::enable_current_exception(OperationNotSupportedException())
-                << errinfo_nativeerror(error);
+            MORDOR_THROW_EXCEPTION_WITH_ERROR(OperationNotSupportedException());
         case WSA(EADDRINUSE):
 #ifdef WINDOWS
         // WSAEACESS is returned from bind when you set SO_REUSEADDR, and
@@ -186,50 +178,40 @@ static void throwSocketException(error_t error)
         case WSAEACCES:
         case ERROR_ADDRESS_ALREADY_ASSOCIATED:
 #endif
-            throw boost::enable_current_exception(AddressInUseException())
-                << errinfo_nativeerror(error);
+            MORDOR_THROW_EXCEPTION_WITH_ERROR(AddressInUseException());
         case WSA(ECONNABORTED):
 #ifdef WINDOWS
         case ERROR_CONNECTION_ABORTED:
 #endif
-            throw boost::enable_current_exception(ConnectionAbortedException())
-                << errinfo_nativeerror(error);
+            MORDOR_THROW_EXCEPTION_WITH_ERROR(ConnectionAbortedException());
         case WSA(ECONNRESET):
-            throw boost::enable_current_exception(ConnectionResetException())
-                << errinfo_nativeerror(error);
+            MORDOR_THROW_EXCEPTION_WITH_ERROR(ConnectionResetException());
         case WSA(ECONNREFUSED):
 #ifdef WINDOWS
         case ERROR_CONNECTION_REFUSED:
 #endif
-            throw boost::enable_current_exception(ConnectionRefusedException())
-                << errinfo_nativeerror(error);
+            MORDOR_THROW_EXCEPTION_WITH_ERROR(ConnectionRefusedException());
         case WSA(EHOSTDOWN):
-            throw boost::enable_current_exception(HostDownException())
-                << errinfo_nativeerror(error);
+            MORDOR_THROW_EXCEPTION_WITH_ERROR(HostDownException());
         case WSA(EHOSTUNREACH):
 #ifdef WINDOWS
         case ERROR_HOST_UNREACHABLE:
 #endif
-            throw boost::enable_current_exception(HostUnreachableException())
-                << errinfo_nativeerror(error);
+            MORDOR_THROW_EXCEPTION_WITH_ERROR(HostUnreachableException());
         case WSA(ENETDOWN):
-            throw boost::enable_current_exception(NetworkDownException())
-                << errinfo_nativeerror(error);
+            MORDOR_THROW_EXCEPTION_WITH_ERROR(NetworkDownException());
         case WSA(ENETRESET):
 #ifdef WINDOWS
         case ERROR_NETNAME_DELETED:
 #endif
-            throw boost::enable_current_exception(NetworkResetException())
-                << errinfo_nativeerror(error);
+            MORDOR_THROW_EXCEPTION_WITH_ERROR(NetworkResetException());
         case WSA(ENETUNREACH):
 #ifdef WINDOWS
         case ERROR_NETWORK_UNREACHABLE:
 #endif
-            throw boost::enable_current_exception(NetworkUnreachableException())
-                << errinfo_nativeerror(error);
+            MORDOR_THROW_EXCEPTION_WITH_ERROR(NetworkUnreachableException());
         case WSA(ETIMEDOUT):
-            throw boost::enable_current_exception(TimedOutException())
-                << errinfo_nativeerror(error);
+            MORDOR_THROW_EXCEPTION_WITH_ERROR(TimedOutException());
         default:
             break;
     }
@@ -282,40 +264,29 @@ void throwExceptionFromLastError(error_t error)
     switch (error) {
         case ERROR_INVALID_HANDLE:
         case WSAENOTSOCK:
-            throw boost::enable_current_exception(BadHandleException())
-                << errinfo_nativeerror(error);
+            MORDOR_THROW_EXCEPTION_WITH_ERROR(BadHandleException());
         case ERROR_FILE_NOT_FOUND:
-            throw boost::enable_current_exception(FileNotFoundException())
-                << errinfo_nativeerror(error);
+            MORDOR_THROW_EXCEPTION_WITH_ERROR(FileNotFoundException());
         case ERROR_ACCESS_DENIED:
-            throw boost::enable_current_exception(AccessDeniedException())
-                << errinfo_nativeerror(error);
+            MORDOR_THROW_EXCEPTION_WITH_ERROR(AccessDeniedException());
         case ERROR_OPERATION_ABORTED:
-            throw boost::enable_current_exception(OperationAbortedException())
-                << errinfo_nativeerror(error);
+            MORDOR_THROW_EXCEPTION_WITH_ERROR(OperationAbortedException());
         case ERROR_BROKEN_PIPE:
-            throw boost::enable_current_exception(UnexpectedEofException())
-                << errinfo_nativeerror(error);
+            MORDOR_THROW_EXCEPTION_WITH_ERROR(UnexpectedEofException());
         case WSAESHUTDOWN:
-            throw boost::enable_current_exception(BrokenPipeException())
-                << errinfo_nativeerror(error);
+            MORDOR_THROW_EXCEPTION_WITH_ERROR(BrokenPipeException());
         case ERROR_SHARING_VIOLATION:
         case ERROR_LOCK_VIOLATION:
-            throw boost::enable_current_exception(SharingViolation())
-                << errinfo_nativeerror(error);
+            MORDOR_THROW_EXCEPTION_WITH_ERROR(SharingViolation());
         case ERROR_CANT_RESOLVE_FILENAME:
-            throw boost::enable_current_exception(UnresolvablePathException())
-                << errinfo_nativeerror(error);
+            MORDOR_THROW_EXCEPTION_WITH_ERROR(UnresolvablePathException());
         case ERROR_DISK_FULL:
-            throw boost::enable_current_exception(OutOfDiskSpaceException())
-                << errinfo_nativeerror(error);
+            MORDOR_THROW_EXCEPTION_WITH_ERROR(OutOfDiskSpaceException());
         case ERROR_NO_UNICODE_TRANSLATION:
-            throw boost::enable_current_exception(InvalidUnicodeException())
-                << errinfo_nativeerror(error);
+            MORDOR_THROW_EXCEPTION_WITH_ERROR(InvalidUnicodeException());
         default:
             throwSocketException(error);
-            throw boost::enable_current_exception(NativeException())
-                << errinfo_nativeerror(error);
+            MORDOR_THROW_EXCEPTION_WITH_ERROR(NativeException());
     }
 }
 #else
@@ -339,36 +310,26 @@ void throwExceptionFromLastError(error_t error)
 {
     switch (error) {
         case EBADF:
-            throw boost::enable_current_exception(BadHandleException())
-                << errinfo_nativeerror(error);
+            MORDOR_THROW_EXCEPTION_WITH_ERROR(BadHandleException());
         case ENOENT:
-            throw boost::enable_current_exception(FileNotFoundException())
-                << errinfo_nativeerror(error);
+            MORDOR_THROW_EXCEPTION_WITH_ERROR(FileNotFoundException());
         case EACCES:
-            throw boost::enable_current_exception(AccessDeniedException())
-                << errinfo_nativeerror(error);
+            MORDOR_THROW_EXCEPTION_WITH_ERROR(AccessDeniedException());
         case ECANCELED:
-            throw boost::enable_current_exception(OperationAbortedException())
-                << errinfo_nativeerror(error);
+            MORDOR_THROW_EXCEPTION_WITH_ERROR(OperationAbortedException());
         case EPIPE:
-            throw boost::enable_current_exception(BrokenPipeException())
-                << errinfo_nativeerror(error);
+            MORDOR_THROW_EXCEPTION_WITH_ERROR(BrokenPipeException());
         case EISDIR:
-            throw boost::enable_current_exception(IsDirectoryException())
-                << errinfo_nativeerror(error);
+            MORDOR_THROW_EXCEPTION_WITH_ERROR(IsDirectoryException());
         case ENOTDIR:
-            throw boost::enable_current_exception(IsNotDirectoryException())
-                << errinfo_nativeerror(error);
+            MORDOR_THROW_EXCEPTION_WITH_ERROR(IsNotDirectoryException());
         case ELOOP:
-            throw boost::enable_current_exception(TooManySymbolicLinksException())
-                << errinfo_nativeerror(error);
+            MORDOR_THROW_EXCEPTION_WITH_ERROR(TooManySymbolicLinksException());
         case ENOSPC:
-            throw boost::enable_current_exception(OutOfDiskSpaceException())
-            << errinfo_nativeerror(error);
+            MORDOR_THROW_EXCEPTION_WITH_ERROR(OutOfDiskSpaceException());
         default:
             throwSocketException(error);
-            throw boost::enable_current_exception(NativeException())
-                << errinfo_nativeerror(error);
+//            MORDOR_THROW_EXCEPTION_WITH_ERROR(NativeException());
     }
 }
 #endif

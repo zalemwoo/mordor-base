@@ -143,8 +143,6 @@ AntXMLListener::testException(const std::string &suite, const std::string &test)
         } catch (std::exception &ex) {
             testInfo.exceptionMessage = ex.what();
             testInfo.exceptionType = typeid(ex).name();
-        } catch (boost::exception &ex) {
-            testInfo.exceptionType = typeid(ex).name();
         } catch (...) {
         }
         testInfo.exceptionMessage = boost::current_exception_diagnostic_information();

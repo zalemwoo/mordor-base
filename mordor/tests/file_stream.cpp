@@ -94,7 +94,8 @@ MORDOR_UNITTEST(FileStream, openSymlinkToDirectory)
         stream.read(buffer, 6);
         MORDOR_NOTREACHED();
     } catch (IsDirectoryException &) {
-    } catch (...) {
+    } catch (::Mordor::ErrorInfo<IsDirectoryException> &) {
+    }  catch (...) {
         rmdir(dir.c_str());
         unlink(sym.c_str());
         throw;

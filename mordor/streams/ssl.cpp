@@ -174,7 +174,8 @@ SSLStream::SSLStream(Stream::ptr parent, bool client, bool own, SSL_CTX *ctx)
     if (!m_ctx) {
         MORDOR_ASSERT(hasOpenSSLError());
         MORDOR_THROW_EXCEPTION(OpenSSLException(getOpenSSLErrorMessage()))
-            << boost::errinfo_api_function("SSL_CTX_new");
+           // << boost::errinfo_api_function("SSL_CTX_new");
+        ;
     }
     // Auto-generate self-signed server cert
     if (!ctx && !client) {
@@ -188,7 +189,8 @@ SSLStream::SSLStream(Stream::ptr parent, bool client, bool own, SSL_CTX *ctx)
     if (!m_ssl) {
         MORDOR_ASSERT(hasOpenSSLError());
         MORDOR_THROW_EXCEPTION(OpenSSLException(getOpenSSLErrorMessage()))
-            << boost::errinfo_api_function("SSL_CTX_new");
+          //  << boost::errinfo_api_function("SSL_CTX_new");
+        ;
     }
     m_readBio = BIO_new(BIO_s_mem());
     m_writeBio = BIO_new(BIO_s_mem());
@@ -197,7 +199,8 @@ SSLStream::SSLStream(Stream::ptr parent, bool client, bool own, SSL_CTX *ctx)
         if (m_writeBio) BIO_free(m_writeBio);
         MORDOR_ASSERT(hasOpenSSLError());
         MORDOR_THROW_EXCEPTION(OpenSSLException(getOpenSSLErrorMessage()))
-            << boost::errinfo_api_function("BIO_new");
+          //  << boost::errinfo_api_function("BIO_new");
+        ;
     }
     BIO_set_mem_eof_return(m_readBio, -1);
 
@@ -263,7 +266,8 @@ SSLStream::close(CloseType type)
                             << m_ssl.get() << "): " << result << " (" << error
                             << ", " << message << ")";
                         MORDOR_THROW_EXCEPTION(OpenSSLException(message))
-                            << boost::errinfo_api_function("SSL_shutdown");
+                           // << boost::errinfo_api_function("SSL_shutdown");
+                        ;
                     }
                     MORDOR_LOG_ERROR(g_log) << this << " SSL_shutdown("
                         << m_ssl.get() << "): " << result << " (" << error
@@ -279,7 +283,8 @@ SSLStream::close(CloseType type)
                             << m_ssl.get() << "): " << result << " (" << error
                             << ", " << message << ")";
                         MORDOR_THROW_EXCEPTION(OpenSSLException(message))
-                            << boost::errinfo_api_function("SSL_shutdown");
+                          //  << boost::errinfo_api_function("SSL_shutdown");
+                        ;
                     }
                 default:
                     MORDOR_NOTREACHED();
@@ -316,7 +321,8 @@ SSLStream::close(CloseType type)
                         << m_ssl.get() << "): " << result << " (" << error
                         << ", " << message << ")";
                     MORDOR_THROW_EXCEPTION(OpenSSLException(message))
-                        << boost::errinfo_api_function("SSL_shutdown");
+                       // << boost::errinfo_api_function("SSL_shutdown");
+                    ;
                 }
                 MORDOR_LOG_WARNING(g_log) << this << " SSL_shutdown(" << m_ssl.get()
                     << "): " << result << " (" << error << ")";
@@ -332,7 +338,8 @@ SSLStream::close(CloseType type)
                         << m_ssl.get() << "): " << result << " (" << error
                         << ", " << message << ")";
                     MORDOR_THROW_EXCEPTION(OpenSSLException(message))
-                        << boost::errinfo_api_function("SSL_shutdown");
+                      //  << boost::errinfo_api_function("SSL_shutdown");
+                    ;
                 }
             default:
                 MORDOR_NOTREACHED();
@@ -376,7 +383,8 @@ SSLStream::read(void *buffer, size_t length)
                         << m_ssl.get() << ", " << toRead << "): " << result
                         << " (" << error << ", " << message << ")";
                     MORDOR_THROW_EXCEPTION(OpenSSLException(message))
-                        << boost::errinfo_api_function("SSL_read");
+                       // << boost::errinfo_api_function("SSL_read");
+                    ;
                 }
                 MORDOR_LOG_WARNING(g_log) << this << " SSL_read("
                     << m_ssl.get() << ", " << toRead << "): " << result
@@ -393,7 +401,8 @@ SSLStream::read(void *buffer, size_t length)
                         << m_ssl.get() << ", " << toRead << "): " << result
                         << " (" << error << ", " << message << ")";
                     MORDOR_THROW_EXCEPTION(OpenSSLException(message))
-                        << boost::errinfo_api_function("SSL_read");
+                      //  << boost::errinfo_api_function("SSL_read");
+                    ;
                 }
             default:
                 MORDOR_NOTREACHED();
@@ -453,7 +462,8 @@ SSLStream::write(const void *buffer, size_t length)
                             << result << " (" << error << ", " << message
                             << ")";
                         MORDOR_THROW_EXCEPTION(OpenSSLException(message))
-                            << boost::errinfo_api_function("SSL_write");
+                          //  << boost::errinfo_api_function("SSL_write");
+                        ;
                 }
                 MORDOR_LOG_ERROR(g_log) << this << " SSL_write("
                     << m_ssl.get() << ", " << toWrite << "): " << result
@@ -470,7 +480,8 @@ SSLStream::write(const void *buffer, size_t length)
                         << m_ssl.get() << ", " << toWrite << "): " << result
                         << " (" << error << ", " << message << ")";
                     MORDOR_THROW_EXCEPTION(OpenSSLException(message))
-                        << boost::errinfo_api_function("SSL_write");
+                      //  << boost::errinfo_api_function("SSL_write");
+                    ;
                 }
             default:
                 MORDOR_NOTREACHED();
@@ -543,7 +554,8 @@ SSLStream::accept()
                         << m_ssl.get() << "): " << result << " (" << error
                         << ", " << message << ")";
                     MORDOR_THROW_EXCEPTION(OpenSSLException(message))
-                        << boost::errinfo_api_function("SSL_accept");
+                    //    << boost::errinfo_api_function("SSL_accept");
+                    ;
                 }
                 MORDOR_LOG_ERROR(g_log) << this << " SSL_accept("
                     << m_ssl.get() << "): " << result << " (" << error
@@ -560,7 +572,8 @@ SSLStream::accept()
                         << m_ssl.get() << "): " << result << " (" << error
                         << ", " << message << ")";
                     MORDOR_THROW_EXCEPTION(OpenSSLException(message))
-                        << boost::errinfo_api_function("SSL_accept");
+                       // << boost::errinfo_api_function("SSL_accept");
+                    ;
                 }
             default:
                 MORDOR_NOTREACHED();
@@ -603,7 +616,8 @@ SSLStream::connect()
                         << m_ssl.get() << "): " << result << " (" << error
                         << ", " << message << ")";
                     MORDOR_THROW_EXCEPTION(OpenSSLException(message))
-                        << boost::errinfo_api_function("SSL_connect");
+                       // << boost::errinfo_api_function("SSL_connect");
+                    ;
                 }
                 MORDOR_LOG_ERROR(g_log) << this << " SSL_connect("
                     << m_ssl.get() << "): " << result << " (" << error
@@ -620,7 +634,8 @@ SSLStream::connect()
                         << m_ssl.get() << "): " << result << " (" << error
                         << ", " << message << ")";
                     MORDOR_THROW_EXCEPTION(OpenSSLException(message))
-                        << boost::errinfo_api_function("SSL_connect");
+                      //  << boost::errinfo_api_function("SSL_connect");
+                    ;
                 }
             default:
                 MORDOR_NOTREACHED();
@@ -641,7 +656,8 @@ SSLStream::serverNameIndication(const std::string &hostname)
         MORDOR_LOG_ERROR(g_log) << this << " SSL_set_tlsext_host_name("
             << m_ssl.get() << ", " << hostname.c_str() << "): " << message;
         MORDOR_THROW_EXCEPTION(OpenSSLException(message))
-            << boost::errinfo_api_function("SSL_set_tlsext_host_name");
+          //  << boost::errinfo_api_function("SSL_set_tlsext_host_name");
+        ;
     }
 #endif
 }

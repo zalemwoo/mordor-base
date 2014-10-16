@@ -86,6 +86,7 @@ public:
     /// @pre Fiber::getThis() owns this mutex
     void unlock();
 
+    bool trylock();
     /// Unlocks the mutex if there are other Fibers waiting for the mutex.
     /// This is useful if there is extra work should be done if there is no one
     /// else waiting (such as flushing a buffer).
@@ -117,6 +118,8 @@ public:
     /// @brief Unlocks the mutex
     /// @pre Fiber::getThis() owns this mutex
     void unlock();
+
+    bool trylock();
     /// Unlocks the mutex if there are other Fibers waiting for the mutex.
     /// This is useful if there is extra work should be done if there is no one
     /// else waiting (such as flushing a buffer).

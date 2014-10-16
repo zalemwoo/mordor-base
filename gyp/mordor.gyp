@@ -1,9 +1,9 @@
 {
-  'variables': {
-      'boost_include_path%': '<(boost_path)',
-      'openssl_include_path%': '<(openssl_path)',
-  },
   'includes': ['common.gypi'],
+  'variables': {
+    'boost_include_path%': '<(boost_path)',
+    'openssl_include_path%': '<(openssl_path)',
+  },
 #  'conditions': [
 #    ['OS == "mac"',{
 #      'make_global_settings': [
@@ -96,10 +96,11 @@
     {
       'target_name': 'mordor_base',
       'product_name': 'mordor_base',
-      'type': 'static_library',
       'dependencies': [
         'mordor_pch',
+        '<(openssl_include_path)/../../openssl.gyp:openssl',
       ],
+      'type': 'static_library',
       'sources': [
         '../mordor/assert.cpp',
         '../mordor/config.cpp',
@@ -247,6 +248,7 @@
       'type': 'executable',
       'dependencies': [
         'mordor_base',
+        '<(openssl_include_path)/../../openssl.gyp:openssl',
       ],
       'sources': [
         '../mordor/examples/cat.cpp',

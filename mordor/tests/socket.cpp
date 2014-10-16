@@ -124,7 +124,8 @@ static void testShutdownException(bool send, bool shutdown, bool otherEnd)
                 while (true) {
                     MORDOR_TEST_ASSERT_EQUAL(conns.connect->send("abc", 3), 3u);
                 }
-            } catch (Exception) {
+            } catch (const Exception &) {
+            } catch (const ::Mordor::ErrorInfo<Exception> &) {
             }
         } else {
             MORDOR_TEST_ASSERT_EXCEPTION(conns.connect->send("abc", 3), Exception);
@@ -165,7 +166,8 @@ MORDOR_UNITTEST(Socket, sendAfterCloseOtherEnd)
     try {
         testShutdownException<BrokenPipeException>(true, false, true);
         // Could also be ConnectionReset on BSDs
-    } catch (ConnectionResetException)
+    } catch (const ConnectionResetException &)
+    {} catch (const ::Mordor::ErrorInfo<ConnectionResetException> &)
     {}
 #endif
 }
@@ -218,7 +220,9 @@ MORDOR_UNITTEST(Address, formatIPv6Address)
             "[2001:470::273:20c:0:0:5ddf]:80");
         testAddress("[2001:470:0:0:273:20c::5ddf]",
             "[2001:470::273:20c:0:5ddf]:80");
-    } catch (std::invalid_argument &) {
+    } catch (const std::invalid_argument &) {
+        throw TestSkippedException();
+    } catch (const ::Mordor::ErrorInfo<std::invalid_argument> &) {
         throw TestSkippedException();
     }
 }
@@ -336,13 +340,13 @@ MORDOR_UNITTEST(Socket, exceedIOVMAX)
     ioManager.dispatch();
 
     const char * buf = "abcd";
-    size_t n = IOV_MAX + 1, len = 4;
+    int32_t n = IOV_MAX + 1, len = 4;
     std::unique_ptr<iovec[]> iovs(new iovec[n]);
-    for (size_t i = 0 ; i < n; ++i) {
+    for (int32_t i = 0 ; i < n; ++i) {
         iovs[i].iov_base = (void*)buf;
         iovs[i].iov_len = len;
     }
-    size_t rc;
+    int32_t rc;
     try {
         rc = conns.connect->send(iovs.get(), n);
     } catch (...) {

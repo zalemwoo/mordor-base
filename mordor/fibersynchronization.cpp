@@ -52,6 +52,28 @@ FiberMutex::unlock()
 }
 
 bool
+FiberMutex::trylock()
+{
+    MORDOR_ASSERT(Scheduler::getThis());
+    if(!m_mutex.try_lock()){
+        return false;
+    }
+
+    MORDOR_ASSERT(m_owner != Fiber::getThis());
+    MORDOR_ASSERT_PERF(std::find(m_waiters.begin(), m_waiters.end(),
+        std::make_pair(Scheduler::getThis(), Fiber::getThis()))
+        == m_waiters.end());
+    if (!m_owner) {
+        m_owner = Fiber::getThis();
+        m_mutex.unlock();
+        return true;
+    }
+
+    m_mutex.unlock();
+    return false;
+}
+
+bool
 FiberMutex::unlockIfNotUnique()
 {
     std::lock_guard<std::mutex> lock(m_mutex);
@@ -125,6 +147,35 @@ RecursiveFiberMutex::unlock()
     if (--m_recursion == 0) {
         unlockNoLock();
     }
+}
+
+
+bool
+RecursiveFiberMutex::trylock()
+{
+    MORDOR_ASSERT(Scheduler::getThis());
+    if(!m_mutex.try_lock()){
+        return false;
+    }
+
+    if (Fiber::getThis() == m_owner) {
+        ++m_recursion;
+        m_mutex.unlock();
+        return true;
+    }
+
+    MORDOR_ASSERT_PERF(std::find(m_waiters.begin(), m_waiters.end(),
+                                 std::make_pair(Scheduler::getThis(), Fiber::getThis())) ==
+                       m_waiters.end());
+    if (!m_owner) {
+        m_owner = Fiber::getThis();
+        m_recursion = 1;
+        m_mutex.unlock();
+        return true;
+    }
+
+    m_mutex.unlock();
+    return false;
 }
 
 bool
