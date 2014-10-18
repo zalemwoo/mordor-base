@@ -784,3 +784,7 @@ SSLStream::sslCallWithLock(std::function<int ()> dg, unsigned long *error)
 }
 
 }
+
+#include "mordor/error_info.cpp"
+template struct Mordor::ErrorInfo<Mordor::OpenSSLException>;
+template struct Mordor::ErrorInfo<Mordor::CertificateVerificationException>;

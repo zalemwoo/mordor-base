@@ -116,6 +116,7 @@ void
 AntXMLListener::testAsserted(const std::string &suite, const std::string &test,
                              const Assertion &assertion)
 {
+    std::exception_ptr eptr;
     if (test != "<invariant>") {
         TestSuiteInfo &suiteInfo = m_testSuites[suite];
         TestInfo &testInfo = suiteInfo.tests[test];
@@ -126,7 +127,13 @@ AntXMLListener::testAsserted(const std::string &suite, const std::string &test,
         replace(testInfo.exceptionMessage, "&", "&amp;");
         replace(testInfo.exceptionMessage, "\"", "&quot;");
         replace(testInfo.exceptionMessage, '\0', "&#00;");
-        testInfo.exceptionDetails = boost::current_exception_diagnostic_information();
+        try{
+            eptr = std::current_exception();
+            if(eptr)
+                std::rethrow_exception(eptr);
+        }catch(const std::exception& ex){
+            testInfo.exceptionDetails = ex.what();
+        }
     }
 }
 
@@ -145,7 +152,7 @@ AntXMLListener::testException(const std::string &suite, const std::string &test)
             testInfo.exceptionType = typeid(ex).name();
         } catch (...) {
         }
-        testInfo.exceptionMessage = boost::current_exception_diagnostic_information();
+//        testInfo.exceptionMessage = boost::current_exception_diagnostic_information();
     }
 }
 
@@ -212,8 +219,8 @@ AntXMLListener::testsComplete()
             while (written < xml.size())
                 written += file.write(xml.c_str() + written,
                     xml.size() - written);
-        } catch (...) {
-            std::cerr << boost::current_exception_diagnostic_information();
+        } catch (const std::exception& ex) {
+            std::cerr << ex.what();
         }
     }
 }

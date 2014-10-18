@@ -6,8 +6,6 @@
 
 #include <iostream>
 
-#include <boost/exception/all.hpp>
-
 using namespace Mordor;
 using namespace Mordor::Test;
 

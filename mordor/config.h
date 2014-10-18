@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include <boost/lexical_cast.hpp>
 #include <boost/multi_index_container.hpp>
 #include <boost/multi_index/ordered_index.hpp>
 #include <boost/multi_index/global_fun.hpp>
@@ -183,14 +182,21 @@ public:
 
     std::string toString() const
     {
-        return boost::lexical_cast<std::string>(m_val);
+        std::ostringstream oss;
+        oss << m_val;
+        return oss.str();
     }
 
-    bool fromString(const std::string &str)
+    bool fromString(const std::string& str)
     {
         try {
-            return val(boost::lexical_cast<T>(str));
-        } catch (boost::bad_lexical_cast &) {
+            T v;
+            std::istringstream iss;
+            iss.str(str);
+            iss >> v;
+            // deal with any error bits that may have been set on the stream
+            return val(v);
+        }catch (...) {
             return false;
         }
     }

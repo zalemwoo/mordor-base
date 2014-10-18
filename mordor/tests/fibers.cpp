@@ -11,6 +11,9 @@ struct DummyException : public std::exception
     ~DummyException() throw() {}
 };
 
+#include "mordor/error_info.cpp"
+template struct Mordor::ErrorInfo<DummyException>;
+
 static void
 fiberProc1(Fiber::ptr mainFiber, Fiber::weak_ptr weakself, int &sequence)
 {
@@ -447,7 +450,6 @@ MORDOR_UNITTEST(Fibers, fiberThrowingExceptionOutOfScope)
         fiber->call();
         MORDOR_NOTREACHED();
     } catch (DummyException &) {
-    } catch (const Mordor::ErrorInfo<DummyException> &) {
     }
 }
 
@@ -597,8 +599,6 @@ MORDOR_UNITTEST(Fibers, exceptionDestructsBeforeFiberDestructs)
             throwingFiber->call();
             MORDOR_NOTREACHED();
         } catch (ExceptionDestructsBeforeFiberDestructsException &) {
-            MORDOR_TEST_ASSERT_EQUAL(++sequence, 4);
-        } catch (const Mordor::ErrorInfo<ExceptionDestructsBeforeFiberDestructsException> &) {
             MORDOR_TEST_ASSERT_EQUAL(++sequence, 4);
         }
         MORDOR_TEST_ASSERT_EQUAL(++sequence, 5);

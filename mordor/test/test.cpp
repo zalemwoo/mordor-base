@@ -75,11 +75,7 @@ void
 assertion(const char *file, int line, const char *function,
                 const std::string &expr)
 {
-    try{
-        throw ::Mordor::ErrorInfo<Assertion>(Assertion(expr), file, line);
-    }catch(const std::exception& ex){
-        std::cerr << ex.what() << std::flush;
-    }
+    MORDOR_THROW_EXCEPTION_FL(Assertion(expr), file, line, function);
 }
 
 static bool
@@ -102,10 +98,6 @@ runTest(TestListener *listener, const std::string &suite,
         } catch (const Assertion &assertion) {
             if (listener)
                 listener->testAsserted(suite, testName, assertion);
-            return false;
-        } catch (const ::Mordor::ErrorInfo<Assertion> &assertion) {
-            if (listener)
-                listener->testException(suite, testName);
             return false;
         } catch (...) {
             if (listener)

@@ -50,8 +50,8 @@ FileStream::init(const std::string &path, AccessFlags accessFlags,
     if (handle == INVALID_HANDLE_VALUE) {
         try {
             MORDOR_THROW_EXCEPTION_FROM_ERROR_API(error, "CreateFileW");
-        } catch (boost::exception &ex) {
-            ex << boost::errinfo_file_name(path);
+        } catch (std::exception &ex) {
+//            ex << boost::errinfo_file_name(path);
             throw;
         }
     }
@@ -82,8 +82,8 @@ FileStream::init(const std::string &path, AccessFlags accessFlags,
     if (handle < 0) {
         try {
             MORDOR_THROW_EXCEPTION_FROM_ERROR_API(error, "open");
-        } catch (boost::exception &ex) {
-            ex << boost::errinfo_file_name(path);
+        } catch (const std::exception &ex) {
+//            ex << boost::errinfo_file_name(path);
             throw;
         }
     }
@@ -139,8 +139,8 @@ FileStream::init(const std::wstring &path, AccessFlags accessFlags,
     if (handle == INVALID_HANDLE_VALUE) {
         try {
             MORDOR_THROW_EXCEPTION_FROM_ERROR_API(error, "CreateFileW");
-        } catch (boost::exception &ex) {
-            ex << boost::errinfo_file_name(toUtf8(path));
+        } catch (std::exception &ex) {
+//            ex << boost::errinfo_file_name(toUtf8(path));
             throw;
         }
     }

@@ -382,8 +382,7 @@ Scheduler::run()
                 }
             } catch (...) {
                 try {
-                    MORDOR_LOG_FATAL(Log::root())
-                        << boost::current_exception_diagnostic_information();
+                    MORDOR_LOG_FATAL(Log::root());
                 }
                 catch(...) {
                     // Swallow any exceptions that might occur while trying to log the current fiber state #98680

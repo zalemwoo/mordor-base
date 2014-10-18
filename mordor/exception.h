@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include <sstream>
+#include <iostream>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -14,6 +15,7 @@
 
 #include "version.h"
 #include "type_name.h"
+#include "thread.h"
 
 #ifdef WINDOWS
 #include <windows.h>
@@ -33,11 +35,16 @@ std::string dump_backtrace();
 std::string to_string( const std::vector<void *> bt );
 std::vector<void *> backtrace(int framesToSkip = 0);
 
-template <typename T>
-struct ErrorInfo : public std::exception
+struct ErrorInfoBase : virtual std::exception
 {
-    ErrorInfo(T const & exception, const char* file, int line)
-            :file_(file), line_(line), exception_(exception), error_(0){};
+};
+
+template <typename Exception>
+struct ErrorInfo : public ErrorInfoBase
+{
+    typedef  Exception exception_type;
+    ErrorInfo(Exception const & exception, const char* file, int line, const char* func)
+            : exception_(exception), file_(file), line_(line), func_(func), error_(0){};
 
     virtual ~ErrorInfo(){}
 
@@ -45,22 +52,13 @@ struct ErrorInfo : public std::exception
         error_ = error;
     }
 
-    virtual const char* what() const throw() override
-    {
-        std::ostringstream oss;
-        oss <<  "==> Exception: " << exception_.what()
-                << ", File: " << file_ << "(" << line_
-                << "), Error: " << "\"" << strerror((int)error_) << "(" << (int)error_ << ")\"" << std::endl;
-        oss << Mordor::dump_backtrace();
-        oss << "<==" << std::endl;
-        err_str_ = oss.str();
-        return err_str_.c_str();
-    }
+    virtual const char* what() const throw() override;
 
+    Exception exception_;
 private:
     const char* file_;
     int line_;
-    T exception_;
+    const char* func_;
     error_t error_;
     mutable std::string err_str_;
 };
@@ -73,15 +71,28 @@ operator<<(const ErrorInfo<T>& x, error_t const & error ){
     return x;
 }
 
-template <typename T>
-inline
-std::ostream &operator <<(std::ostream &os, const ErrorInfo<T>& ex)
-{
-    return os << "Exception:: " << ex.what();
-}
+#define MORDOR_THROW_EXCEPTION_FL(x, file, line, func) \
+    do{                                                                             \
+        try{                                                                        \
+            throw ::Mordor::ErrorInfo<decltype(x)>(x, file, line, func);                 \
+        }catch(const ::Mordor::ErrorInfo<decltype(x)> & ex){                      \
+            std::cerr << ex.what() << std::flush;                                    \
+            std::rethrow_exception(std::make_exception_ptr(ex.exception_));          \
+        }                                                                            \
+    }while(0)
 
-#define MORDOR_THROW_EXCEPTION(x)  throw ::Mordor::ErrorInfo<decltype(x)>(x, __FILE__, __LINE__)
-#define MORDOR_THROW_EXCEPTION_WITH_ERROR(x)  MORDOR_THROW_EXCEPTION((x)) << error
+#define MORDOR_THROW_EXCEPTION_WITH_ERROR_FL(x, file, line, func)                           \
+    do{                                                                             \
+        try{                                                                          \
+            throw (::Mordor::ErrorInfo<decltype(x)>(x, file, line, func) << error);       \
+        }catch(const ::Mordor::ErrorInfo<decltype(x)> & ex){                        \
+            std::cerr << ex.what() << std::flush;                                      \
+            std::rethrow_exception(std::make_exception_ptr(ex.exception_));          \
+        }                                                                            \
+    }while(0)
+
+#define MORDOR_THROW_EXCEPTION(x)  MORDOR_THROW_EXCEPTION_FL(x, __FILE__, __LINE__, __func__)
+#define MORDOR_THROW_EXCEPTION_WITH_ERROR(x) MORDOR_THROW_EXCEPTION_WITH_ERROR_FL(x, __FILE__, __LINE__, __func__)
 
 void rethrow_exception(std::exception_ptr const & ep);
 
@@ -137,19 +148,57 @@ void lastError(error_t error);
 
 std::ostream &operator <<(std::ostream &os, error_t error);
 
-void throwExceptionFromLastError(error_t lastError);
+void throwExceptionFromLastError(error_t lastError, const char* file, int line, const char* func);
 
 #define MORDOR_THROW_EXCEPTION_FROM_LAST_ERROR()                                \
-        ::Mordor::throwExceptionFromLastError(::Mordor::lastError())
-
-#define MORDOR_THROW_EXCEPTION_FROM_LAST_ERROR_API(api)                         \
-        MORDOR_THROW_EXCEPTION_FROM_LAST_ERROR()
+        ::Mordor::throwExceptionFromLastError(::Mordor::lastError(), __FILE__, __LINE__, __func__);
 
 #define MORDOR_THROW_EXCEPTION_FROM_ERROR(error)                                \
-        ::Mordor::throwExceptionFromLastError(error)
+        ::Mordor::throwExceptionFromLastError(error, __FILE__, __LINE__, __func__);
+
+#define MORDOR_THROW_EXCEPTION_FROM_LAST_ERROR_API(api)                         \
+    do{                                                                             \
+        try{                                                                         \
+            MORDOR_THROW_EXCEPTION_FROM_LAST_ERROR();                                \
+        }catch(...){                                                                \
+            std::cerr << std::endl << "==> Exception API( " << api << " ) <==\n";        \
+            throw;                                                                  \
+        }                                                                            \
+    }while(0)
 
 #define MORDOR_THROW_EXCEPTION_FROM_ERROR_API(error, api)                       \
-        ::Mordor::throwExceptionFromLastError(error)
-}
+    do{                                                                             \
+        try{                                                                     \
+            MORDOR_THROW_EXCEPTION_FROM_ERROR(error);                            \
+        }catch(...){                                        \
+            std::cerr << std::endl << "==> Exception API( " << api << " ) <==\n";        \
+            throw;                                                              \
+        }                                                                        \
+    }while(0)
+
+} // namespace Mordor
+
+extern template struct Mordor::ErrorInfo<std::runtime_error>;
+extern template struct Mordor::ErrorInfo<std::bad_alloc>;
+extern template struct Mordor::ErrorInfo<std::out_of_range>;
+extern template struct Mordor::ErrorInfo<std::invalid_argument>;
+extern template struct Mordor::ErrorInfo<Mordor::StreamException>;
+extern template struct Mordor::ErrorInfo<Mordor::UnexpectedEofException>;
+extern template struct Mordor::ErrorInfo<Mordor::WriteBeyondEofException>;
+extern template struct Mordor::ErrorInfo<Mordor::BufferOverflowException>;
+extern template struct Mordor::ErrorInfo<Mordor::NativeException>;
+extern template struct Mordor::ErrorInfo<Mordor::OperationNotSupportedException>;
+extern template struct Mordor::ErrorInfo<Mordor::FileNotFoundException>;
+extern template struct Mordor::ErrorInfo<Mordor::AccessDeniedException>;
+extern template struct Mordor::ErrorInfo<Mordor::BadHandleException>;
+extern template struct Mordor::ErrorInfo<Mordor::OperationAbortedException>;
+extern template struct Mordor::ErrorInfo<Mordor::BrokenPipeException>;
+extern template struct Mordor::ErrorInfo<Mordor::SharingViolation>;
+extern template struct Mordor::ErrorInfo<Mordor::UnresolvablePathException>;
+extern template struct Mordor::ErrorInfo<Mordor::IsDirectoryException>;
+extern template struct Mordor::ErrorInfo<Mordor::IsNotDirectoryException>;
+extern template struct Mordor::ErrorInfo<Mordor::TooManySymbolicLinksException>;
+extern template struct Mordor::ErrorInfo<Mordor::OutOfDiskSpaceException>;
+extern template struct Mordor::ErrorInfo<Mordor::InvalidUnicodeException>;
 
 #endif

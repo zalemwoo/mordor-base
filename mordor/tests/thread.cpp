@@ -75,3 +75,6 @@ MORDOR_UNITTEST(Thread, exceptionRethrow)
     MORDOR_TEST_ASSERT_EXCEPTION(rethrowException(poolA, poolB), DummyException);
     poolA.switchTo();
 }
+
+#include "mordor/error_info.cpp"
+template struct Mordor::ErrorInfo<DummyException>;

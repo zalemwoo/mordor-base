@@ -186,7 +186,7 @@ public:
 
     template <class T> void operator()(const T &t) const
     {
-        (*this)(boost::lexical_cast<std::string>(t));
+        (*this)(std::to_string(t));
     }
 
     template <class T> void setValue(const T &v) const
@@ -194,7 +194,7 @@ public:
         if (!m_current.empty()) {
             ConfigVarBase::ptr var = Config::lookup(m_current);
             if (var) {
-                var->fromString(boost::lexical_cast<std::string>(v));
+                var->fromString(std::to_string(v));
             } else if (isValidConfigVarName(m_current)) {
                 Config::lookup(m_current, v, "Come from config file!");
             }
@@ -286,12 +286,10 @@ static void loadFromRegistry(HKEY hKey)
             std::string data;
             switch (type) {
                 case REG_DWORD:
-                    data = boost::lexical_cast<std::string>(
-                        *(DWORD *)&buffer[0]);
+                    data = std::to_string(*(DWORD *)&buffer[0]);
                     break;
                 case REG_QWORD:
-                    data = boost::lexical_cast<std::string>(
-                        *(long long *)&buffer[0]);
+                    data = to_string(*(long long *)&buffer[0]);
                     break;
                 case REG_EXPAND_SZ:
                 case REG_SZ:

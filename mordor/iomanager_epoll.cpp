@@ -474,8 +474,6 @@ IOManager::idle()
             Fiber::yield();
         } catch (OperationAbortedException &) {
             return;
-        } catch (ErrorInfo<OperationAbortedException> &) {
-            return;
         }
     }
 }

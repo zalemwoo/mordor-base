@@ -92,8 +92,6 @@
 #include <vector>
 
 // Non-STL C++ headers
-#include <boost/exception/all.hpp>
-#include <boost/lexical_cast.hpp>
 #include <boost/multi_index_container.hpp>
 #include <boost/multi_index/ordered_index.hpp>
 #include <boost/multi_index/global_fun.hpp>

@@ -187,8 +187,8 @@ private:
 #ifdef WINDOWS
 typedef errinfo_lasterror errinfo_gaierror;
 #else
-typedef boost::error_info<struct tag_gaierror, int> errinfo_gaierror;
-std::string to_string( errinfo_gaierror const & e );
+//typedef boost::error_info<struct tag_gaierror, int> errinfo_gaierror;
+//std::string to_string( errinfo_gaierror const & e );
 #endif
 
 struct NameLookupException : virtual SocketException {};
@@ -355,5 +355,22 @@ std::ostream &includePort(std::ostream &os);
 std::ostream &excludePort(std::ostream &os);
 
 }
+
+extern template struct Mordor::ErrorInfo<Mordor::SocketException>;
+extern template struct Mordor::ErrorInfo<Mordor::AddressInUseException>;
+extern template struct Mordor::ErrorInfo<Mordor::ConnectionAbortedException>;
+extern template struct Mordor::ErrorInfo<Mordor::ConnectionResetException>;
+extern template struct Mordor::ErrorInfo<Mordor::ConnectionRefusedException>;
+extern template struct Mordor::ErrorInfo<Mordor::HostDownException>;
+extern template struct Mordor::ErrorInfo<Mordor::HostUnreachableException>;
+extern template struct Mordor::ErrorInfo<Mordor::NetworkDownException>;
+extern template struct Mordor::ErrorInfo<Mordor::NetworkResetException>;
+extern template struct Mordor::ErrorInfo<Mordor::NetworkUnreachableException>;
+extern template struct Mordor::ErrorInfo<Mordor::TimedOutException>;
+extern template struct Mordor::ErrorInfo<Mordor::NameLookupException>;
+extern template struct Mordor::ErrorInfo<Mordor::TemporaryNameServerFailureException>;
+extern template struct Mordor::ErrorInfo<Mordor::PermanentNameServerFailureException>;
+extern template struct Mordor::ErrorInfo<Mordor::NoNameServerDataException>;
+extern template struct Mordor::ErrorInfo<Mordor::HostNotFoundException>;
 
 #endif

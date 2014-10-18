@@ -99,8 +99,11 @@ MORDOR_UNITTEST(Socket, sendTimeout)
     MORDOR_TEST_ASSERT_ABOUT_EQUAL(start + 200000, TimerManager::now(), 500000);
 }
 
-class DummyException
+class DummyException: public std::exception
 {};
+
+#include "mordor/error_info.cpp"
+template struct Mordor::ErrorInfo<DummyException>;
 
 template <class Exception>
 static void testShutdownException(bool send, bool shutdown, bool otherEnd)
@@ -125,7 +128,6 @@ static void testShutdownException(bool send, bool shutdown, bool otherEnd)
                     MORDOR_TEST_ASSERT_EQUAL(conns.connect->send("abc", 3), 3u);
                 }
             } catch (const Exception &) {
-            } catch (const ::Mordor::ErrorInfo<Exception> &) {
             }
         } else {
             MORDOR_TEST_ASSERT_EXCEPTION(conns.connect->send("abc", 3), Exception);
@@ -167,7 +169,6 @@ MORDOR_UNITTEST(Socket, sendAfterCloseOtherEnd)
         testShutdownException<BrokenPipeException>(true, false, true);
         // Could also be ConnectionReset on BSDs
     } catch (const ConnectionResetException &)
-    {} catch (const ::Mordor::ErrorInfo<ConnectionResetException> &)
     {}
 #endif
 }
@@ -221,8 +222,6 @@ MORDOR_UNITTEST(Address, formatIPv6Address)
         testAddress("[2001:470:0:0:273:20c::5ddf]",
             "[2001:470::273:20c:0:5ddf]:80");
     } catch (const std::invalid_argument &) {
-        throw TestSkippedException();
-    } catch (const ::Mordor::ErrorInfo<std::invalid_argument> &) {
         throw TestSkippedException();
     }
 }

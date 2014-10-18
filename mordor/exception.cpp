@@ -1,6 +1,9 @@
 // Copyright (c) 2009 - Mozy, Inc.
 
 #include "mordor/exception.h"
+#include "mordor/assert.h"
+
+#include <iomanip> // for std::setw
 
 #ifdef WINDOWS
 #include <dbghelp.h>
@@ -53,7 +56,7 @@ std::string dump_backtrace()
     void* trace[100];
     int size = ::backtrace(trace, 100);
     char** symbols = ::backtrace_symbols(trace, size);
-    os << "==== C stack trace ===============================\n";
+    os << "=== C stack trace ===============================\n";
     if (size == 0) {
         os << "(empty)\n";
     } else if (symbols == NULL) {
@@ -124,12 +127,12 @@ std::string to_string(const std::vector<void *> backtrace)
     return os.str();
 }
 
-std::string to_string( errinfo_gaierror const &e)
-{
-    std::ostringstream os;
-    os << e.value() << ", \"" << gai_strerror(e.value()) << "\"";
-    return os.str();
-}
+//std::string to_string( errinfo_gaierror const &e)
+//{
+//    std::ostringstream os;
+//    os << e.value() << ", \"" << gai_strerror(e.value()) << "\"";
+//    return os.str();
+//}
 
 std::vector<void *> backtrace(int framesToSkip)
 {
@@ -166,11 +169,12 @@ void rethrow_exception(std::exception_ptr const & ep)
 #define WSA(error) error
 #endif
 
-static void throwSocketException(error_t error)
+static void throwSocketException(error_t error, const char* file, int line, const char* func)
 {
     switch (error) {
         case WSA(EAFNOSUPPORT):
-            MORDOR_THROW_EXCEPTION_WITH_ERROR(OperationNotSupportedException());
+            MORDOR_THROW_EXCEPTION_WITH_ERROR_FL(OperationNotSupportedException(), file, line, func);
+            break;
         case WSA(EADDRINUSE):
 #ifdef WINDOWS
         // WSAEACESS is returned from bind when you set SO_REUSEADDR, and
@@ -178,40 +182,50 @@ static void throwSocketException(error_t error)
         case WSAEACCES:
         case ERROR_ADDRESS_ALREADY_ASSOCIATED:
 #endif
-            MORDOR_THROW_EXCEPTION_WITH_ERROR(AddressInUseException());
+            MORDOR_THROW_EXCEPTION_WITH_ERROR_FL(AddressInUseException(), file, line, func);
+            break;
         case WSA(ECONNABORTED):
 #ifdef WINDOWS
         case ERROR_CONNECTION_ABORTED:
 #endif
-            MORDOR_THROW_EXCEPTION_WITH_ERROR(ConnectionAbortedException());
+            MORDOR_THROW_EXCEPTION_WITH_ERROR_FL(ConnectionAbortedException(), file, line, func);
+            break;
         case WSA(ECONNRESET):
-            MORDOR_THROW_EXCEPTION_WITH_ERROR(ConnectionResetException());
+            MORDOR_THROW_EXCEPTION_WITH_ERROR_FL(ConnectionResetException(), file, line, func);
+            break;
         case WSA(ECONNREFUSED):
 #ifdef WINDOWS
         case ERROR_CONNECTION_REFUSED:
 #endif
-            MORDOR_THROW_EXCEPTION_WITH_ERROR(ConnectionRefusedException());
+            MORDOR_THROW_EXCEPTION_WITH_ERROR_FL(ConnectionRefusedException(), file, line, func);
+            break;
         case WSA(EHOSTDOWN):
-            MORDOR_THROW_EXCEPTION_WITH_ERROR(HostDownException());
+            MORDOR_THROW_EXCEPTION_WITH_ERROR_FL(HostDownException(), file, line, func);
+            break;
         case WSA(EHOSTUNREACH):
 #ifdef WINDOWS
         case ERROR_HOST_UNREACHABLE:
 #endif
-            MORDOR_THROW_EXCEPTION_WITH_ERROR(HostUnreachableException());
+            MORDOR_THROW_EXCEPTION_WITH_ERROR_FL(HostUnreachableException(), file, line, func);
+            break;
         case WSA(ENETDOWN):
-            MORDOR_THROW_EXCEPTION_WITH_ERROR(NetworkDownException());
+            MORDOR_THROW_EXCEPTION_WITH_ERROR_FL(NetworkDownException(), file, line, func);
+            break;
         case WSA(ENETRESET):
 #ifdef WINDOWS
         case ERROR_NETNAME_DELETED:
 #endif
-            MORDOR_THROW_EXCEPTION_WITH_ERROR(NetworkResetException());
+            MORDOR_THROW_EXCEPTION_WITH_ERROR_FL(NetworkResetException(), file, line, func);
+            break;
         case WSA(ENETUNREACH):
 #ifdef WINDOWS
         case ERROR_NETWORK_UNREACHABLE:
 #endif
-            MORDOR_THROW_EXCEPTION_WITH_ERROR(NetworkUnreachableException());
+            MORDOR_THROW_EXCEPTION_WITH_ERROR_FL(NetworkUnreachableException(), file, line, func);
+            break;
         case WSA(ETIMEDOUT):
-            MORDOR_THROW_EXCEPTION_WITH_ERROR(TimedOutException());
+            MORDOR_THROW_EXCEPTION_WITH_ERROR_FL(TimedOutException(), file, line, func);
+            break;
         default:
             break;
     }
@@ -259,34 +273,44 @@ std::ostream &operator <<(std::ostream &os, error_t error)
     return os;
 }
 
-void throwExceptionFromLastError(error_t error)
+void throwExceptionFromLastError(error_t error, const char* file, int line, const char* func)
 {
     switch (error) {
         case ERROR_INVALID_HANDLE:
         case WSAENOTSOCK:
-            MORDOR_THROW_EXCEPTION_WITH_ERROR(BadHandleException());
+            MORDOR_THROW_EXCEPTION_WITH_ERROR_FL(BadHandleException(), file, line, func);
+            break;
         case ERROR_FILE_NOT_FOUND:
-            MORDOR_THROW_EXCEPTION_WITH_ERROR(FileNotFoundException());
+            MORDOR_THROW_EXCEPTION_WITH_ERROR_FL(FileNotFoundException(), file, line, func);
+            break;
         case ERROR_ACCESS_DENIED:
-            MORDOR_THROW_EXCEPTION_WITH_ERROR(AccessDeniedException());
+            MORDOR_THROW_EXCEPTION_WITH_ERROR_FL(AccessDeniedException(), file, line, func);
+            break;
         case ERROR_OPERATION_ABORTED:
-            MORDOR_THROW_EXCEPTION_WITH_ERROR(OperationAbortedException());
+            MORDOR_THROW_EXCEPTION_WITH_ERROR_FL(OperationAbortedException(), file, line, func);
+            break;
         case ERROR_BROKEN_PIPE:
-            MORDOR_THROW_EXCEPTION_WITH_ERROR(UnexpectedEofException());
+            MORDOR_THROW_EXCEPTION_WITH_ERROR_FL(UnexpectedEofException(), file, line, func);
+            break;
         case WSAESHUTDOWN:
-            MORDOR_THROW_EXCEPTION_WITH_ERROR(BrokenPipeException());
+            MORDOR_THROW_EXCEPTION_WITH_ERROR_FL(BrokenPipeException(), file, line, func);
+            break;
         case ERROR_SHARING_VIOLATION:
         case ERROR_LOCK_VIOLATION:
-            MORDOR_THROW_EXCEPTION_WITH_ERROR(SharingViolation());
+            MORDOR_THROW_EXCEPTION_WITH_ERROR_FL(SharingViolation(), file, line, func);
+            break;
         case ERROR_CANT_RESOLVE_FILENAME:
-            MORDOR_THROW_EXCEPTION_WITH_ERROR(UnresolvablePathException());
+            MORDOR_THROW_EXCEPTION_WITH_ERROR_FL(UnresolvablePathException(), file, line, func);
+            break;
         case ERROR_DISK_FULL:
-            MORDOR_THROW_EXCEPTION_WITH_ERROR(OutOfDiskSpaceException());
+            MORDOR_THROW_EXCEPTION_WITH_ERROR_FL(OutOfDiskSpaceException(), file, line, func);
+            break;
         case ERROR_NO_UNICODE_TRANSLATION:
-            MORDOR_THROW_EXCEPTION_WITH_ERROR(InvalidUnicodeException());
+            MORDOR_THROW_EXCEPTION_WITH_ERROR_FL(InvalidUnicodeException(), file, line, func);
+            break;
         default:
-            throwSocketException(error);
-            MORDOR_THROW_EXCEPTION_WITH_ERROR(NativeException());
+            throwSocketException(error, file, line, func);
+            MORDOR_THROW_EXCEPTION_WITH_ERROR_FL(NativeException(), file, line, func);
     }
 }
 #else
@@ -306,32 +330,66 @@ std::ostream &operator <<(std::ostream &os, error_t error)
     return os << (int)error << ", \"" << strerror(error) << "\"";
 }
 
-void throwExceptionFromLastError(error_t error)
+void throwExceptionFromLastError(error_t error, const char* file, int line, const char* func)
 {
     switch (error) {
         case EBADF:
-            MORDOR_THROW_EXCEPTION_WITH_ERROR(BadHandleException());
+            MORDOR_THROW_EXCEPTION_WITH_ERROR_FL(BadHandleException(), file, line, func);
+            break;
         case ENOENT:
-            MORDOR_THROW_EXCEPTION_WITH_ERROR(FileNotFoundException());
+            MORDOR_THROW_EXCEPTION_WITH_ERROR_FL(FileNotFoundException(), file, line, func);
+            break;
         case EACCES:
-            MORDOR_THROW_EXCEPTION_WITH_ERROR(AccessDeniedException());
+            MORDOR_THROW_EXCEPTION_WITH_ERROR_FL(AccessDeniedException(), file, line, func);
+            break;
         case ECANCELED:
-            MORDOR_THROW_EXCEPTION_WITH_ERROR(OperationAbortedException());
+            MORDOR_THROW_EXCEPTION_WITH_ERROR_FL(OperationAbortedException(), file, line, func);
+            break;
         case EPIPE:
-            MORDOR_THROW_EXCEPTION_WITH_ERROR(BrokenPipeException());
+            MORDOR_THROW_EXCEPTION_WITH_ERROR_FL(BrokenPipeException(), file, line, func);
+            break;
         case EISDIR:
-            MORDOR_THROW_EXCEPTION_WITH_ERROR(IsDirectoryException());
+            MORDOR_THROW_EXCEPTION_WITH_ERROR_FL(IsDirectoryException(), file, line, func);
+            break;
         case ENOTDIR:
-            MORDOR_THROW_EXCEPTION_WITH_ERROR(IsNotDirectoryException());
+            MORDOR_THROW_EXCEPTION_WITH_ERROR_FL(IsNotDirectoryException(), file, line, func);
+            break;
         case ELOOP:
-            MORDOR_THROW_EXCEPTION_WITH_ERROR(TooManySymbolicLinksException());
+            MORDOR_THROW_EXCEPTION_WITH_ERROR_FL(TooManySymbolicLinksException(), file, line, func);
+            break;
         case ENOSPC:
-            MORDOR_THROW_EXCEPTION_WITH_ERROR(OutOfDiskSpaceException());
+            MORDOR_THROW_EXCEPTION_WITH_ERROR_FL(OutOfDiskSpaceException(), file, line, func);
+            break;
         default:
-            throwSocketException(error);
-//            MORDOR_THROW_EXCEPTION_WITH_ERROR(NativeException());
+            throwSocketException(error,file, line, func);
+            MORDOR_THROW_EXCEPTION_WITH_ERROR_FL(NativeException(), file, line, func);
     }
 }
 #endif
 
-}
+} // namespace Mordor
+
+#include "error_info.cpp"
+
+template struct Mordor::ErrorInfo<std::runtime_error>;
+template struct Mordor::ErrorInfo<std::bad_alloc>;
+template struct Mordor::ErrorInfo<std::out_of_range>;
+template struct Mordor::ErrorInfo<std::invalid_argument>;
+template struct Mordor::ErrorInfo<Mordor::StreamException>;
+template struct Mordor::ErrorInfo<Mordor::UnexpectedEofException>;
+template struct Mordor::ErrorInfo<Mordor::WriteBeyondEofException>;
+template struct Mordor::ErrorInfo<Mordor::BufferOverflowException>;
+template struct Mordor::ErrorInfo<Mordor::NativeException>;
+template struct Mordor::ErrorInfo<Mordor::OperationNotSupportedException>;
+template struct Mordor::ErrorInfo<Mordor::FileNotFoundException>;
+template struct Mordor::ErrorInfo<Mordor::AccessDeniedException>;
+template struct Mordor::ErrorInfo<Mordor::BadHandleException>;
+template struct Mordor::ErrorInfo<Mordor::OperationAbortedException>;
+template struct Mordor::ErrorInfo<Mordor::BrokenPipeException>;
+template struct Mordor::ErrorInfo<Mordor::SharingViolation>;
+template struct Mordor::ErrorInfo<Mordor::UnresolvablePathException>;
+template struct Mordor::ErrorInfo<Mordor::IsDirectoryException>;
+template struct Mordor::ErrorInfo<Mordor::IsNotDirectoryException>;
+template struct Mordor::ErrorInfo<Mordor::TooManySymbolicLinksException>;
+template struct Mordor::ErrorInfo<Mordor::OutOfDiskSpaceException>;
+template struct Mordor::ErrorInfo<Mordor::InvalidUnicodeException>;

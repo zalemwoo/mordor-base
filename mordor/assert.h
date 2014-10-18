@@ -88,3 +88,6 @@ private:
 #else
 #define MORDOR_ASSERT_PERF(x) ((void)0)
 #endif
+
+extern template struct Mordor::ErrorInfo<Mordor::Assertion>;
+

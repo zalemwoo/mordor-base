@@ -1319,24 +1319,24 @@ static void throwGaiException(int error)
 {
     switch (error) {
         case EAI_AGAIN:
-            MORDOR_THROW_EXCEPTION_WITH_ERROR(TemporaryNameServerFailureException());
+            MORDOR_THROW_EXCEPTION_WITH_ERROR(TemporaryNameServerFailureException()); break;
             // MORDOR_THROW_EXCEPTION(TemporaryNameServerFailureException()
               //  << errinfo_gaierror(error)
               //  << boost::errinfo_api_function("getaddrinfo"));
         case EAI_FAIL:
-            MORDOR_THROW_EXCEPTION_WITH_ERROR(PermanentNameServerFailureException());
+            MORDOR_THROW_EXCEPTION_WITH_ERROR(PermanentNameServerFailureException()); break;
             // MORDOR_THROW_EXCEPTION(PermanentNameServerFailureException()
               //  << errinfo_gaierror(error)
               //  << boost::errinfo_api_function("getaddrinfo"));
 #if defined(WSANO_DATA) || defined(EAI_NODATA)
         case MORDOR_NATIVE(WSANO_DATA, EAI_NODATA):
-            MORDOR_THROW_EXCEPTION_WITH_ERROR(NoNameServerDataException());
+            MORDOR_THROW_EXCEPTION_WITH_ERROR(NoNameServerDataException()); break;
             // MORDOR_THROW_EXCEPTION(NoNameServerDataException()
               //  << errinfo_gaierror(error)
               //  << boost::errinfo_api_function("getaddrinfo"));
 #endif
         case EAI_NONAME:
-            MORDOR_THROW_EXCEPTION_WITH_ERROR(HostNotFoundException());
+            MORDOR_THROW_EXCEPTION_WITH_ERROR(HostNotFoundException()); break;
             // MORDOR_THROW_EXCEPTION(HostNotFoundException()
               //  << errinfo_gaierror(error)
               //  << boost::errinfo_api_function("getaddrinfo"));
@@ -1344,7 +1344,7 @@ static void throwGaiException(int error)
         case EAI_ADDRFAMILY:
 #endif
         case EAI_FAMILY:
-            MORDOR_THROW_EXCEPTION_WITH_ERROR(OperationNotSupportedException());
+            MORDOR_THROW_EXCEPTION_WITH_ERROR(OperationNotSupportedException()); break;
             // MORDOR_THROW_EXCEPTION(OperationNotSupportedException()
               //  << errinfo_gaierror(error)
               //  << boost::errinfo_api_function("getaddrinfo"));
@@ -2002,3 +2002,22 @@ std::ostream &excludePort(std::ostream &os)
 }
 
 }
+
+#include "error_info.cpp"
+
+template struct Mordor::ErrorInfo<Mordor::SocketException>;
+template struct Mordor::ErrorInfo<Mordor::AddressInUseException>;
+template struct Mordor::ErrorInfo<Mordor::ConnectionAbortedException>;
+template struct Mordor::ErrorInfo<Mordor::ConnectionResetException>;
+template struct Mordor::ErrorInfo<Mordor::ConnectionRefusedException>;
+template struct Mordor::ErrorInfo<Mordor::HostDownException>;
+template struct Mordor::ErrorInfo<Mordor::HostUnreachableException>;
+template struct Mordor::ErrorInfo<Mordor::NetworkDownException>;
+template struct Mordor::ErrorInfo<Mordor::NetworkResetException>;
+template struct Mordor::ErrorInfo<Mordor::NetworkUnreachableException>;
+template struct Mordor::ErrorInfo<Mordor::TimedOutException>;
+template struct Mordor::ErrorInfo<Mordor::NameLookupException>;
+template struct Mordor::ErrorInfo<Mordor::TemporaryNameServerFailureException>;
+template struct Mordor::ErrorInfo<Mordor::PermanentNameServerFailureException>;
+template struct Mordor::ErrorInfo<Mordor::NoNameServerDataException>;
+template struct Mordor::ErrorInfo<Mordor::HostNotFoundException>;

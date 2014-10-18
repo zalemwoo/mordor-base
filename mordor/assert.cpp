@@ -69,3 +69,6 @@ void debugBreak()
 }
 
 }
+
+#include "error_info.cpp"
+template struct Mordor::ErrorInfo<Mordor::Assertion>;

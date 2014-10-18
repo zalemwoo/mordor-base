@@ -140,50 +140,49 @@ MORDOR_NO_SERIALIZE_BARE(std::vector<T>)
 // Assertion macros
 #define MORDOR_TEST_ASSERT(expr)                                                \
     if (!(expr)) ::Mordor::Test::assertion(__FILE__, __LINE__,                  \
-        BOOST_CURRENT_FUNCTION, #expr)
+        __func__, #expr)
 
 #define MORDOR_TEST_ASSERT_EQUAL(lhs, rhs)                                      \
-    ::Mordor::Test::assertEqual(__FILE__, __LINE__, BOOST_CURRENT_FUNCTION,     \
+    ::Mordor::Test::assertEqual(__FILE__, __LINE__, __func__,     \
         lhs, rhs, #lhs, #rhs)
 
 #define MORDOR_TEST_ASSERT_NOT_EQUAL(lhs, rhs)                                  \
-    ::Mordor::Test::assertNotEqual(__FILE__, __LINE__, BOOST_CURRENT_FUNCTION,  \
+    ::Mordor::Test::assertNotEqual(__FILE__, __LINE__, __func__,  \
         lhs, rhs, #lhs, #rhs)
 
 #define MORDOR_TEST_ASSERT_LESS_THAN(lhs, rhs)                                  \
-    ::Mordor::Test::assertLessThan(__FILE__, __LINE__, BOOST_CURRENT_FUNCTION,  \
+    ::Mordor::Test::assertLessThan(__FILE__, __LINE__, __func__,  \
         lhs, rhs, #lhs, #rhs)
 
 #define MORDOR_TEST_ASSERT_LESS_THAN_OR_EQUAL(lhs, rhs)                         \
     ::Mordor::Test::assertLessThanOrEqual(__FILE__, __LINE__,                   \
-        BOOST_CURRENT_FUNCTION, lhs, rhs, #lhs, #rhs)
+        __func__, lhs, rhs, #lhs, #rhs)
 
 #define MORDOR_TEST_ASSERT_GREATER_THAN(lhs, rhs)                               \
     ::Mordor::Test::assertGreaterThan(__FILE__, __LINE__,                       \
-        BOOST_CURRENT_FUNCTION, lhs, rhs, #lhs, #rhs)
+        __func__, lhs, rhs, #lhs, #rhs)
 
 #define MORDOR_TEST_ASSERT_GREATER_THAN_OR_EQUAL(lhs, rhs)                      \
     ::Mordor::Test::assertGreaterThanOrEqual(__FILE__, __LINE__,                \
-        BOOST_CURRENT_FUNCTION, lhs, rhs, #lhs, #rhs)
+        __func__, lhs, rhs, #lhs, #rhs)
 
 #define MORDOR_TEST_ASSERT_ABOUT_EQUAL(lhs, rhs, variance)                      \
-    ::Mordor::Test::assertAboutEqual(__FILE__, __LINE__, BOOST_CURRENT_FUNCTION,\
+    ::Mordor::Test::assertAboutEqual(__FILE__, __LINE__, __func__,\
         lhs, rhs, #lhs, #rhs, variance)
 
 #define MORDOR_TEST_ASSERT_EXCEPTION(code, exception)                           \
     try {                                                                       \
         code;                                                                   \
-        ::Mordor::Test::assertion(__FILE__, __LINE__, BOOST_CURRENT_FUNCTION,   \
+        ::Mordor::Test::assertion(__FILE__, __LINE__, __func__,   \
             "Expected " + std::string(typeid(exception).name()) +               \
             " from " #code);                                                    \
     } catch (exception &) {                                                     \
-    } catch (::Mordor::ErrorInfo<exception> &) {                                \
     }
 
 #define MORDOR_TEST_ASSERT_ANY_EXCEPTION(code)                                  \
     try {                                                                       \
         code;                                                                   \
-        ::Mordor::Test::assertion(__FILE__, __LINE__, BOOST_CURRENT_FUNCTION,   \
+        ::Mordor::Test::assertion(__FILE__, __LINE__, __func__,   \
             "Expected an exception from " #code);                               \
     } catch (...) {                                                             \
     }
@@ -195,14 +194,11 @@ MORDOR_NO_SERIALIZE_BARE(std::vector<T>)
             code;                                                               \
             __selfAsserted = true;                                              \
             ::Mordor::Test::assertion(__FILE__, __LINE__,                       \
-                BOOST_CURRENT_FUNCTION, "Expected Assertion from " #code);      \
+                __func__, "Expected Assertion from " #code);      \
         } catch (::Mordor::Assertion &) {                                           \
                 if (__selfAsserted)                                                 \
                     throw;                                                      \
-        } catch (const ::Mordor::ErrorInfo<::Mordor::Assertion> &) {               \
-                if (__selfAsserted)                                                 \
-                    throw;                                                          \
-        }                                                                       \
+        }                                                                    \
     }
 
 /// Asserts on destruction if it was alive for longer than us microseconds

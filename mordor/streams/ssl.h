@@ -85,4 +85,7 @@ private:
 
 }
 
+extern template struct Mordor::ErrorInfo<Mordor::OpenSSLException>;
+extern template struct Mordor::ErrorInfo<Mordor::CertificateVerificationException>;
+
 #endif

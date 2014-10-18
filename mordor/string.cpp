@@ -3,6 +3,7 @@
 #include <algorithm>
 
 #include <string.h>
+#include <string>
 
 #include <openssl/md5.h>
 #include <openssl/sha.h>
@@ -523,10 +524,9 @@ unsigned long long stringToMicroseconds(const std::string &string)
 
     // If there's a decimal point, use floating point arithmetic
     if (copy.find('.') != std::string::npos)
-        return (unsigned long long)(multiplier *
-            boost::lexical_cast<double>(copy));
+        return (unsigned long long)(multiplier * std::stod(copy));
     else
-        return multiplier * boost::lexical_cast<unsigned long long>(copy);
+        return multiplier * std::stoull(copy);
 }
 
 #ifdef WINDOWS
