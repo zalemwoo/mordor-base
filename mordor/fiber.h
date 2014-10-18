@@ -8,6 +8,7 @@
 #include "util.h"
 #include "exception.h"
 #include "thread_local_storage.h"
+#include "fibersynchronization.h"
 #include "version.h"
 
 // Fiber impl selection
@@ -137,6 +138,8 @@ public:
     /// @pre state() == INIT || state() == HOLD
     Fiber::ptr yieldTo(bool yieldToCallerOnTerminate = true);
 
+    void join();
+
     /// Yield to the calling Fiber
 
     /// yield() returns when the Fiber has been called or yielded to again
@@ -187,7 +190,7 @@ private:
     ptr m_outer, m_yielder;
     weak_ptr m_terminateOuter;
     std::exception_ptr m_exception;
-
+    FiberEvent joinEvent;
     static ThreadLocalStorage<Fiber *> t_fiber;
 
 public:
