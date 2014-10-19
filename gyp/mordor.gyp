@@ -1,7 +1,6 @@
 {
   'includes': ['common.gypi'],
   'variables': {
-    'boost_include_path%': '<(boost_path)',
     'openssl_include_path%': '<(openssl_path)',
   },
 #  'conditions': [
@@ -16,7 +15,6 @@
   'target_defaults': {
     'include_dirs': [
       '..',
-      '<(boost_include_path)',
       '<(openssl_include_path)',
     ],
     'msvs_settings': {
@@ -72,8 +70,6 @@
 #            '-L /usr/local/lib',
 #            '-lssl',
 #            '-lcrypto',
-#            '-lboost_thread',
-#            '-lboost_system',
 #            '-llzma',
 #            '-lz',
           ],

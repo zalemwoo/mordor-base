@@ -5,13 +5,10 @@
 #include "predef.h"
 
 #include <set>
+#include <map>
 #include <sstream>
 #include <string>
 #include <vector>
-
-#include <boost/multi_index_container.hpp>
-#include <boost/multi_index/ordered_index.hpp>
-#include <boost/multi_index/global_fun.hpp>
 
 #include "assert.h"
 #include "util.h"
@@ -215,14 +212,8 @@ private:
     {
         return var->name();
     }
-    typedef boost::multi_index_container<
-        ConfigVarBase::ptr,
-        boost::multi_index::indexed_by<
-            boost::multi_index::ordered_unique<
-            boost::multi_index::global_fun<const ConfigVarBase::ptr &,
-                std::string, &getName> >
-        >
-    > ConfigVarSet;
+
+    typedef std::multimap<std::string, ConfigVarBase::ptr> ConfigVarSet;
 
 public:
 #ifdef WINDOWS
@@ -267,7 +258,7 @@ public:
         MORDOR_ASSERT(vars().find(name) == vars().end());
         typename ConfigVar<T>::ptr v(new ConfigVar<T>(name, defaultValue,
             description, lockable));
-        vars().insert(v);
+        vars().insert( std::pair<std::string, typename ConfigVar<T>::ptr>(name, v) );
         return v;
     }
 

@@ -226,7 +226,7 @@ Config::lookup(const std::string &name)
 {
     ConfigVarSet::iterator it = vars().find(name);
     if (it != vars().end())
-        return *it;
+        return it->second;
     return ConfigVarBase::ptr();
 }
 
@@ -236,7 +236,7 @@ Config::visit(std::function<void (ConfigVarBase::ptr)> dg)
     for (ConfigVarSet::const_iterator it = vars().begin();
         it != vars().end();
         ++it) {
-        dg(*it);
+        dg(it->second);
     }
 }
 

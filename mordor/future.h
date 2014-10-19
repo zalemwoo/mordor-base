@@ -65,7 +65,7 @@ public:
         if (newValue == 0x2) {
             MORDOR_ASSERT(m_dg);
             if (m_scheduler)
-                m_scheduler->schedule(std::bind(m_dg, boost::cref(m_t)));
+                m_scheduler->schedule(std::bind(m_dg, std::cref(m_t)));
             else
                 m_dg(m_t);
             return;

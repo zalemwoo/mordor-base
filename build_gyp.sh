@@ -7,4 +7,4 @@ if [ "${GYP_PATH}" == "" ]; then
 fi
 
 mkdir -p ${OUT_DIR} 
-cd ${OUT_DIR} && ${GYP_PATH}/gyp ${SCRIPT_DIR}/gyp/mordor.gyp --depth=. -D target_arch=x64 -D library=static_library -D boost_path=../.. -D openssl_path=../../openssl/openssl/include $@
+cd ${OUT_DIR} && ${GYP_PATH}/gyp ${SCRIPT_DIR}/gyp/mordor.gyp --depth=. -D target_arch=x64 -D library=static_library  -D openssl_path=../../openssl/openssl/include $@
