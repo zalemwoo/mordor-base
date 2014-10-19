@@ -10,11 +10,11 @@ namespace Daemon {
 
 static Logger::ptr g_log = Log::lookup("mordor:daemon");
 
-boost::signals2::signal<void ()> onTerminate;
-boost::signals2::signal<void ()> onInterrupt;
-boost::signals2::signal<void ()> onReload;
-boost::signals2::signal<void ()> onPause;
-boost::signals2::signal<void ()> onContinue;
+Signal11::Signal<void ()> onTerminate;
+Signal11::Signal<void ()> onInterrupt;
+Signal11::Signal<void ()> onReload;
+Signal11::Signal<void ()> onPause;
+Signal11::Signal<void ()> onContinue;
 
 #define CTRL_CASE(ctrl)             \
     case ctrl:                      \
@@ -89,20 +89,20 @@ static DWORD WINAPI HandlerEx(DWORD dwControl, DWORD dwEventType,
         case SERVICE_CONTROL_INTERROGATE:
             break;
         case SERVICE_CONTROL_PARAMCHANGE:
-            onReload();
+            onReload.emit();
             break;
         case SERVICE_CONTROL_STOP:
             if (onTerminate.empty())
                 ExitProcess(0);
-            onTerminate();
+            onTerminate.emit();
             break;
         case SERVICE_CONTROL_PAUSE:
             if (!onPause.empty())
                 status->status.dwCurrentState = SERVICE_PAUSED;
-            onPause();
+            onPause.emit();
             break;
         case SERVICE_CONTROL_CONTINUE:
-            onContinue();
+            onContinue.emit();
             status->status.dwCurrentState = SERVICE_RUNNING;
             break;
         default:
@@ -188,13 +188,13 @@ static BOOL WINAPI HandlerRoutine(DWORD dwCtrlType)
         case CTRL_C_EVENT:
             if (onInterrupt.empty())
                 return FALSE;
-            onInterrupt();
+            onInterrupt.emit();
             break;
         case CTRL_CLOSE_EVENT:
         case CTRL_BREAK_EVENT:
             if (onTerminate.empty())
                 return FALSE;
-            onTerminate();
+            onTerminate.emit();
             break;
         default:
             return FALSE;
@@ -290,21 +290,21 @@ static void *signal_thread(void *arg)
                     unblockAndRaise(caught);
                     continue;
                 }
-                onTerminate();
+                onTerminate.emit();
                 break;
             case SIGINT:
                 if (onInterrupt.empty()) {
                     unblockAndRaise(caught);
                     continue;
                 }
-                onInterrupt();
+                onInterrupt.emit();
                 break;
             case SIGTSTP:
-                onPause();
+                onPause.emit();
                 unblockAndRaise(caught);
                 break;
             case SIGCONT:
-                onContinue();
+                onContinue.emit();
                 unblockAndRaise(caught);
                 break;
             case SIGHUP:
@@ -312,7 +312,7 @@ static void *signal_thread(void *arg)
                     unblockAndRaise(caught);
                     continue;
                 }
-                onReload();
+                onReload.emit();
                 break;
             default:
                 continue;

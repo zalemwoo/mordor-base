@@ -12,10 +12,11 @@
 #include <boost/multi_index_container.hpp>
 #include <boost/multi_index/ordered_index.hpp>
 #include <boost/multi_index/global_fun.hpp>
-#include <boost/signals2/signal.hpp>
 
 #include "assert.h"
 #include "util.h"
+#include "string_conv.h"
+#include "signal11.h"
 
 namespace Mordor {
 
@@ -129,7 +130,7 @@ public:
     bool isLockable() const { return m_lockable; }
 
     /// onChange should not throw any exceptions
-    boost::signals2::signal<void ()> onChange;
+    Signal11::Signal<void()> onChange;
     /// @deprecated (use onChange directly)
     void monitor(std::function<void ()> dg) { onChange.connect(dg); }
 
@@ -142,18 +143,6 @@ private:
     bool m_lockable;
 };
 
-template <typename T>
-static inline std::string toStringFromNative(const T& val)
-{
-    return std::to_string(val);
-}
-
-template <>
-inline std::string toStringFromNative<std::string>(const std::string& val)
-{
-    return val;
-}
-
 template <class T>
 bool isConfigNotLocked(const T &);
 
@@ -161,25 +150,9 @@ template <class T>
 class ConfigVar : public ConfigVarBase
 {
 public:
-    struct BreakOnFailureCombiner
-    {
-        typedef bool result_type;
-        template <typename InputIterator>
-        bool operator()(InputIterator first, InputIterator last) const
-        {
-            try {
-                for (; first != last; ++first)
-                    if (!*first) return false;
-            } catch (...) {
-                return false;
-            }
-            return true;
-        }
-    };
-
     typedef std::shared_ptr<ConfigVar> ptr;
-    typedef boost::signals2::signal<bool (const T&), BreakOnFailureCombiner> before_change_signal_type;
-    typedef boost::signals2::signal<void (const T&)> on_change_signal_type;
+    typedef Signal11::Signal<bool (const T&), Signal11::CollectorVector<bool>> before_change_signal_type;
+    typedef Signal11::Signal<void (const T&)> on_change_signal_type;
 
 public:
     ConfigVar(const std::string &name, const T &defaultValue,
@@ -194,16 +167,13 @@ public:
 
     std::string toString() const
     {
-        return toStringFromNative(m_val);
+        return StringNativeConv<T>::toString(m_val);
     }
 
     bool fromString(const std::string& str)
     {
         try {
-            T v;
-            std::istringstream iss;
-            iss.str(str);
-            iss >> v;
+            T v = StringNativeConv<T>::fromString(str);
             // deal with any error bits that may have been set on the stream
             return val(v);
         }catch (...) {
@@ -223,11 +193,13 @@ public:
     {
         T oldVal = m_val;
         if (oldVal != v) {
-            if (!beforeChange(v))
-                return false;
+            std::vector<bool> results = beforeChange.emit(v);
+            for (std::vector<bool>::iterator it = results.begin() ; it != results.end(); ++it){
+                if(!*it) return false;
+            }
             m_val = v;
-            onChange(v);
-            ConfigVarBase::onChange();
+            onChange.emit(v);
+            ConfigVarBase::onChange.emit();
         }
         return true;
     }
@@ -374,6 +346,7 @@ std::shared_ptr<Timer> associateTimerWithConfigVar(
     std::shared_ptr<ConfigVar<std::string> > configVar,
     std::function<void ()> dg);
 
+#endif // Ze
 
 /// Associate a scheduler with a ConfigVar
 ///
@@ -383,7 +356,6 @@ std::shared_ptr<Timer> associateTimerWithConfigVar(
 void associateSchedulerWithConfigVar(Scheduler &scheduler,
     std::shared_ptr<ConfigVar<int> > configVar);
 
-#endif // Ze
 
 /// helper class to allow temporarily change the ConfigVar Value
 ///

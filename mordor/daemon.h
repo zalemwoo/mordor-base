@@ -8,7 +8,7 @@
 #endif
 #include <vector>
 
-#include <boost/signals2/signal.hpp>
+#include "signal11.h"
 
 #include "version.h"
 
@@ -67,11 +67,12 @@ namespace Daemon {
 int run(int argc, char **argv, std::function<int (int, char **)> daemonMain,
         bool enableWatchdog = false);
 
-extern boost::signals2::signal<void ()> onTerminate;
-extern boost::signals2::signal<void ()> onInterrupt;
-extern boost::signals2::signal<void ()> onReload;
-extern boost::signals2::signal<void ()> onPause;
-extern boost::signals2::signal<void ()> onContinue;
+extern Signal11::Signal<void ()> onTerminate;
+extern Signal11::Signal<void ()> onInterrupt;
+extern Signal11::Signal<void ()> onReload;
+extern Signal11::Signal<void ()> onPause;
+extern Signal11::Signal<void ()> onContinue;
+
 #ifdef POSIX
 /// Works together with watchdog, callback whenever child process exits.
 /// Watchdog will check the return value to restart child (if false) or

@@ -74,7 +74,7 @@ MORDOR_UNITTEST(Socket, receiveTimeout)
     IOManager ioManager;
     Connection conns = establishConn(ioManager);
     conns.connect->receiveTimeout(100000);
-    ioManager.schedule(std::bind(&acceptOne, boost::ref(conns)));
+    ioManager.schedule(std::bind(&acceptOne, std::ref(conns)));
     conns.connect->connect(conns.address);
     ioManager.dispatch();
     char buf;
@@ -89,7 +89,7 @@ MORDOR_UNITTEST(Socket, sendTimeout)
     IOManager ioManager;
     Connection conns = establishConn(ioManager);
     conns.connect->sendTimeout(200000);
-    ioManager.schedule(std::bind(&acceptOne, boost::ref(conns)));
+    ioManager.schedule(std::bind(&acceptOne, std::ref(conns)));
     conns.connect->connect(conns.address);
     ioManager.dispatch();
     char buf[65536];
@@ -110,7 +110,7 @@ static void testShutdownException(bool send, bool shutdown, bool otherEnd)
 {
     IOManager ioManager;
     Connection conns = establishConn(ioManager);
-    ioManager.schedule(std::bind(&acceptOne, boost::ref(conns)));
+    ioManager.schedule(std::bind(&acceptOne, std::ref(conns)));
     conns.connect->connect(conns.address);
     ioManager.dispatch();
 
@@ -270,7 +270,7 @@ MORDOR_UNITTEST(Socket, cancelSend)
 {
     IOManager ioManager;
     Connection conns = establishConn(ioManager);
-    ioManager.schedule(std::bind(&acceptOne, boost::ref(conns)));
+    ioManager.schedule(std::bind(&acceptOne, std::ref(conns)));
     conns.connect->connect(conns.address);
     ioManager.dispatch();
 
@@ -288,7 +288,7 @@ MORDOR_UNITTEST(Socket, cancelReceive)
 {
     IOManager ioManager;
     Connection conns = establishConn(ioManager);
-    ioManager.schedule(std::bind(&acceptOne, boost::ref(conns)));
+    ioManager.schedule(std::bind(&acceptOne, std::ref(conns)));
     conns.connect->connect(conns.address);
     ioManager.dispatch();
 
@@ -306,7 +306,7 @@ MORDOR_UNITTEST(Socket, sendReceive)
 {
     IOManager ioManager;
     Connection conns = establishConn(ioManager);
-    ioManager.schedule(std::bind(&acceptOne, boost::ref(conns)));
+    ioManager.schedule(std::bind(&acceptOne, std::ref(conns)));
     conns.connect->connect(conns.address);
     ioManager.dispatch();
 
@@ -334,7 +334,7 @@ MORDOR_UNITTEST(Socket, exceedIOVMAX)
 {
     IOManager ioManager;
     Connection conns = establishConn(ioManager);
-    ioManager.schedule(std::bind(&acceptOne, boost::ref(conns)));
+    ioManager.schedule(std::bind(&acceptOne, std::ref(conns)));
     conns.connect->connect(conns.address);
     ioManager.dispatch();
 
@@ -440,7 +440,7 @@ MORDOR_UNITTEST(Socket, sendReceiveForceAsync)
     size_t sent = 0;
 
     Fiber::ptr otherfiber(new Fiber(std::bind(&receiveFiber, conns.listen,
-        boost::ref(sent), boost::ref(sequence))));
+        std::ref(sent), std::ref(sequence))));
 
     ioManager.schedule(otherfiber);
     // Wait for otherfiber to "block", and return control to us
@@ -513,12 +513,12 @@ MORDOR_UNITTEST(Socket, eventOnRemoteShutdown)
 {
     IOManager ioManager;
     Connection conns = establishConn(ioManager);
-    ioManager.schedule(std::bind(&acceptOne, boost::ref(conns)));
+    ioManager.schedule(std::bind(&acceptOne, std::ref(conns)));
     conns.connect->connect(conns.address);
     ioManager.dispatch();
     
     bool remoteClosed = false;
-    conns.accept->onRemoteClose(std::bind(&closed, boost::ref(remoteClosed)));
+    conns.accept->onRemoteClose(std::bind(&closed, std::ref(remoteClosed)));
     conns.connect->shutdown();
     ioManager.dispatch();
     MORDOR_TEST_ASSERT(remoteClosed);
@@ -528,12 +528,12 @@ MORDOR_UNITTEST(Socket, eventOnRemoteReset)
 {
     IOManager ioManager;
     Connection conns = establishConn(ioManager);
-    ioManager.schedule(std::bind(&acceptOne, boost::ref(conns)));
+    ioManager.schedule(std::bind(&acceptOne, std::ref(conns)));
     conns.connect->connect(conns.address);
     ioManager.dispatch();
     
     bool remoteClosed = false;
-    conns.accept->onRemoteClose(std::bind(&closed, boost::ref(remoteClosed)));
+    conns.accept->onRemoteClose(std::bind(&closed, std::ref(remoteClosed)));
     conns.connect.reset();
     ioManager.dispatch();
     MORDOR_TEST_ASSERT(remoteClosed);

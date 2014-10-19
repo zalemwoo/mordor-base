@@ -427,10 +427,12 @@ Timer::ptr associateTimerWithConfigVar(TimerManager &timerManager,
     Timer::ptr result = timerManager.registerTimer(initialValue, dg, true);
     configVar->beforeChange.connect(&verifyString);
     configVar->onChange.connect(
-        ConfigVar<std::string>::on_change_signal_type::slot_type(
-            &updateTimer, _1, result.get()).track(result));
+        std::bind<ConfigVar<std::string>::on_change_signal_type::CallbackFunction>(&updateTimer, std::placeholders::_1, result.get()));
+//    configVar->onChange.connect(
+//        std::bind<ConfigVar<std::string>::on_change_signal_type::CallbackFunction>(&updateTimer, std::placeholders::_1, result.get()).track(result));
     return result;
 }
+#endif // Ze
 
 static bool verifyThreadCount(int value)
 {
@@ -448,11 +450,9 @@ void associateSchedulerWithConfigVar(Scheduler &scheduler,
     ConfigVar<int>::ptr configVar)
 {
     configVar->beforeChange.connect(&verifyThreadCount);
-    configVar->onChange.connect(std::bind(&updateThreadCount, _1,
-        std::ref(scheduler)));
+    configVar->onChange.connect(std::bind(&updateThreadCount, std::placeholders::_1, std::ref(scheduler)));
     updateThreadCount(configVar->val(), scheduler);
 }
-#endif // Ze
 
 HijackConfigVar::HijackConfigVar(const std::string &name, const std::string &value)
     : m_var(Config::lookup(name))
