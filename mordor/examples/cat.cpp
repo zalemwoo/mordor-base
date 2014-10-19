@@ -34,9 +34,8 @@ MORDOR_MAIN(int argc, const char * const argv[])
             }
             transferStream(inStream, stdoutStream);
         }
-    } catch (...) {
-        std::cerr << boost::current_exception_diagnostic_information()
-            << std::endl;
+    } catch (const std::exception& ex) {
+        std::cerr << ex.what() << std::endl;
     }
     return 0;
 }

@@ -7,7 +7,6 @@
 #include <regex>
 #include <thread>
 
-// #include "json.h" // Z
 #include "scheduler.h"
 #include "string.h"
 #include "timer.h"
@@ -132,94 +131,6 @@ Config::loadFromEnvironment()
             var->fromString(value);
     }
 }
-
-#if 0 // Zs
-namespace {
-class JSONVisitor : public boost::static_visitor<>
-{
-public:
-    void operator()(const JSON::Object &object)
-    {
-        std::string prefix;
-        if (!m_current.empty())
-            prefix = m_current + '.';
-        for (JSON::Object::const_iterator it(object.begin());
-            it != object.end();
-            ++it) {
-            std::string key = it->first;
-            std::transform(key.begin(), key.end(), key.begin(), tolower);
-            if (!isValidConfigVarName(key, false))
-                continue;
-            m_toCheck.push_back(std::make_pair(prefix + key, &it->second));
-        }
-    }
-
-    void operator()(const JSON::Array &array) const
-    {
-        // Ignore it
-    }
-
-    void operator()(const boost::blank &null) const
-    {
-        (*this)(std::string());
-    }
-
-    void operator()(bool b) const
-    {
-        setValue(b);
-    }
-
-    void operator()(long long l) const
-    {
-        setValue(l);
-    }
-
-    void operator()(double d) const
-    {
-        setValue(d);
-    }
-
-    void operator()(const std::string &str) const
-    {
-        setValue(str);
-    }
-
-    template <class T> void operator()(const T &t) const
-    {
-        (*this)(std::to_string(t));
-    }
-
-    template <class T> void setValue(const T &v) const
-    {
-        if (!m_current.empty()) {
-            ConfigVarBase::ptr var = Config::lookup(m_current);
-            if (var) {
-                var->fromString(std::to_string(v));
-            } else if (isValidConfigVarName(m_current)) {
-                Config::lookup(m_current, v, "Come from config file!");
-            }
-        }
-    }
-
-    std::list<std::pair<std::string, const JSON::Value *> > m_toCheck;
-    std::string m_current;
-};
-}
-
-void
-Config::loadFromJSON(const JSON::Value &json)
-{
-    JSONVisitor visitor;
-    visitor.m_toCheck.push_back(std::make_pair(std::string(), &json));
-    while (!visitor.m_toCheck.empty()) {
-        std::pair<std::string, const JSON::Value *> current =
-            visitor.m_toCheck.front();
-        visitor.m_toCheck.pop_front();
-        visitor.m_current = current.first;
-        boost::apply_visitor(visitor, *current.second);
-    }
-}
-#endif // Ze
 
 ConfigVarBase::ptr
 Config::lookup(const std::string &name)
@@ -407,32 +318,6 @@ Config::monitorRegistry(IOManager &ioManager, HKEY hKey,
     return result;
 }
 #endif
-
-#if 0 // Zs
-static bool verifyString(const std::string &string)
-{
-    stringToMicroseconds(string);
-    return true;
-}
-
-static void updateTimer(const std::string &string, Timer *timer)
-{
-    timer->reset(stringToMicroseconds(string), false);
-}
-
-Timer::ptr associateTimerWithConfigVar(TimerManager &timerManager,
-    ConfigVar<std::string>::ptr configVar, std::function<void ()> dg)
-{
-    unsigned long long initialValue = stringToMicroseconds(configVar->val());
-    Timer::ptr result = timerManager.registerTimer(initialValue, dg, true);
-    configVar->beforeChange.connect(&verifyString);
-    configVar->onChange.connect(
-        std::bind<ConfigVar<std::string>::on_change_signal_type::CallbackFunction>(&updateTimer, std::placeholders::_1, result.get()));
-//    configVar->onChange.connect(
-//        std::bind<ConfigVar<std::string>::on_change_signal_type::CallbackFunction>(&updateTimer, std::placeholders::_1, result.get()).track(result));
-    return result;
-}
-#endif // Ze
 
 static bool verifyThreadCount(int value)
 {

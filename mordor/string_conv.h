@@ -4,6 +4,61 @@
 namespace Mordor{
 
 template <typename T>
+static inline T fromString(const std::string& str){
+    throw std::invalid_argument(str);
+}
+
+template <>
+inline std::string fromString<std::string>(const std::string& str){
+    return str;
+}
+
+template <>
+inline bool fromString<bool>(const std::string& str){
+    return (str == "true" || str == "True" || str == "TRUE") ? true: false;
+}
+
+template <>
+inline int fromString<int>(const std::string& str){
+    return std::stoi(str);
+}
+
+template <>
+inline long fromString<long>(const std::string& str){
+    return std::stol(str);
+}
+
+template <>
+inline unsigned long fromString<unsigned long>(const std::string& str){
+    return std::stoul(str);
+}
+
+template <>
+inline long long fromString<long long>(const std::string& str){
+    return std::stoll(str);
+}
+
+template <>
+inline unsigned long long fromString<unsigned long long>(const std::string& str){
+    return std::stoull(str);
+}
+
+template <>
+inline float fromString<float>(const std::string& str){
+    return std::stof(str);
+}
+
+template <>
+inline double fromString<double>(const std::string& str){
+    return std::stod(str);
+}
+
+template <>
+inline long double fromString<long double>(const std::string& str){
+    return std::stold(str);
+}
+
+template <typename T>
 struct StringNativeConvBase
 {
     static inline std::string toString(const T& val){
@@ -27,91 +82,12 @@ struct StringNativeConvBase<bool>
     }
 };
 
-template <typename T>
-struct StringNativeConv : public StringNativeConvBase<T>
+template <typename T, template <typename> class Base = StringNativeConvBase>
+struct StringNativeConv : public Base<T>
 {
+    using Base<T>::toString;
     static inline T fromString(const std::string& str){
-        throw std::invalid_argument(str);
-    }
-};
-
-template <>
-struct StringNativeConv<std::string> : public StringNativeConvBase<std::string>
-{
-    static inline std::string fromString(const std::string& str){
-        return str;
-    }
-};
-
-template <>
-struct StringNativeConv<int> : public StringNativeConvBase<int>
-{
-    static inline int fromString(const std::string& str){
-        return std::stoi(str);
-    }
-};
-
-template <>
-struct StringNativeConv<long> : public StringNativeConvBase<long>
-{
-    static inline long fromString(const std::string& str){
-        return std::stol(str);
-    }
-};
-
-template <>
-struct StringNativeConv<unsigned long> : public StringNativeConvBase<unsigned long>
-{
-    static inline unsigned long fromString(const std::string& str){
-        return std::stoul(str);
-    }
-};
-
-template <>
-struct StringNativeConv<long long> : public StringNativeConvBase<long long>
-{
-    static inline long long fromString(const std::string& str){
-        return std::stoll(str);
-    }
-};
-
-template <>
-struct StringNativeConv<unsigned long long> : public StringNativeConvBase<unsigned long long>
-{
-    static inline unsigned long long fromString(const std::string& str){
-        return std::stoull(str);
-    }
-};
-
-template <>
-struct StringNativeConv<float> : public StringNativeConvBase<float>
-{
-    static inline float fromString(const std::string& str){
-        return std::stof(str);
-    }
-};
-
-template <>
-struct StringNativeConv<double> : public StringNativeConvBase<double>
-{
-    static inline double fromString(const std::string& str){
-        return std::stod(str);
-    }
-};
-
-template <>
-struct StringNativeConv<long double> : public StringNativeConvBase<long double>
-{
-    static inline long double fromString(const std::string& str){
-        return std::stold(str);
-    }
-};
-
-template <>
-struct StringNativeConv<bool> : public StringNativeConvBase<bool>
-{
-    static inline bool fromString(const std::string& str){
-        return (str == "true" || str == "True" || str == "TRUE") ? true: false;
+        return Mordor::fromString<T>(str);
     }
 };
 

@@ -1,3 +1,8 @@
+/*
+ * https://github.com/amc522/signal11
+ *
+ */
+
 // CC0 Public Domain: http://creativecommons.org/publicdomain/zero/1.0/
 #pragma once
 

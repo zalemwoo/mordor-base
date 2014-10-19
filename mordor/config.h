@@ -21,12 +21,6 @@ namespace Mordor {
 class IOManager;
 #endif
 
-#if 0 // Zs
-namespace JSON {
-class Value;
-}
-#endif // Ze
-
 /*
 Configuration Variables (ConfigVars) are a mechanism for configuring the
 behavior of Mordor at runtime (e.g. without requiring recompilation).
@@ -327,17 +321,6 @@ class Timer;
 class TimerManager;
 class Scheduler;
 
-#if 0 // Zs
-/// Creates a timer that is controlled by a string ConfigVar
-///
-/// The timer is automatically updated to use the current value of the
-/// ConfigVar, and the string is parsed with stringToMicroseconds from string.h
-std::shared_ptr<Timer> associateTimerWithConfigVar(
-    TimerManager &timerManager,
-    std::shared_ptr<ConfigVar<std::string> > configVar,
-    std::function<void ()> dg);
-
-#endif // Ze
 
 /// Associate a scheduler with a ConfigVar
 ///
