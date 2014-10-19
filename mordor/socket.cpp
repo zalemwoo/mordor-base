@@ -1275,10 +1275,11 @@ Socket::type()
     return result;
 }
 
-boost::signals2::connection
-Socket::onRemoteClose(const boost::signals2::slot<void ()> &slot)
+Signal11::ConnectionRef
+Socket::onRemoteClose(
+        const Signal11::Signal<void()>::CallbackFunction &slot)
 {
-    boost::signals2::connection result = m_onRemoteClose.connect(slot);
+    Signal11::ConnectionRef result = m_onRemoteClose.connect(slot);
     if (m_isConnected && !m_isRegisteredForRemoteClose)
         registerForRemoteClose();
     return result;
@@ -1289,7 +1290,7 @@ Socket::callOnRemoteClose(weak_ptr self)
 {
     ptr strongSelf = self.lock();
     if (strongSelf)
-        strongSelf->m_onRemoteClose();
+        strongSelf->m_onRemoteClose.emit();
 }
 
 void

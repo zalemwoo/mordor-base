@@ -4,6 +4,8 @@
 
 #include "mordor/version.h"
 
+#include <stdlib.h>
+
 #ifdef WINDOWS
 #include "handle.h"
 #else

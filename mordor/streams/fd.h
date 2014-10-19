@@ -4,6 +4,8 @@
 
 #include "stream.h"
 
+#include <unistd.h>
+
 namespace Mordor {
 
 class IOManager;

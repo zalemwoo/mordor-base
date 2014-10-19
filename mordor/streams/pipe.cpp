@@ -38,8 +38,8 @@ public:
     void cancelWrite();
     void flush(bool flushParent = true);
 
-    boost::signals2::connection onRemoteClose(
-        const boost::signals2::slot<void ()> &slot);
+    Signal11::ConnectionRef onRemoteClose(
+        const Signal11::Signal<void()>::CallbackFunction &slot);
 
 private:
     PipeStream::weak_ptr m_otherStream;
@@ -50,7 +50,7 @@ private:
     CloseType m_closed, m_otherClosed;
     Scheduler *m_pendingWriterScheduler, *m_pendingReaderScheduler;
     std::shared_ptr<Fiber> m_pendingWriter, m_pendingReader;
-    boost::signals2::signal<void ()> m_onRemoteClose;
+    Signal11::Signal<void ()> m_onRemoteClose;
 };
 
 std::pair<Stream::ptr, Stream::ptr> pipeStream(size_t bufferSize)
@@ -93,7 +93,7 @@ PipeStream::~PipeStream()
             otherStream->m_otherClosed = (CloseType)(otherStream->m_otherClosed | READ);
         else
             otherStream->m_otherClosed = (CloseType)(otherStream->m_otherClosed & ~READ);
-        otherStream->m_onRemoteClose();
+        otherStream->m_onRemoteClose.emit();
     }
     if (m_pendingReader) {
         MORDOR_ASSERT(m_pendingReaderScheduler);
@@ -121,7 +121,7 @@ PipeStream::close(CloseType type)
     if (otherStream) {
         otherStream->m_otherClosed = m_closed;
         if (closeWriteFirstTime)
-            otherStream->m_onRemoteClose();
+            otherStream->m_onRemoteClose.emit();
     }
     if (m_pendingReader && (m_closed & WRITE)) {
         MORDOR_ASSERT(m_pendingReaderScheduler);
@@ -325,8 +325,8 @@ PipeStream::flush(bool flushParent)
     }
 }
 
-boost::signals2::connection
-PipeStream::onRemoteClose(const boost::signals2::slot<void ()> &slot)
+Signal11::ConnectionRef PipeStream::onRemoteClose(
+        const Signal11::Signal<void()>::CallbackFunction &slot)
 {
     return m_onRemoteClose.connect(slot);
 }

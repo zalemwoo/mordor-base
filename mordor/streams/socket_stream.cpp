@@ -77,9 +77,8 @@ SocketStream::cancelWrite()
     m_socket->cancelSend();
 }
 
-boost::signals2::connection
-SocketStream::onRemoteClose(
-    const boost::signals2::slot<void ()> &slot)
+Signal11::ConnectionRef SocketStream::onRemoteClose(
+        const Signal11::Signal<void()>::CallbackFunction &slot)
 {
     return m_socket->onRemoteClose(slot);
 }

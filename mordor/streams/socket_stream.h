@@ -30,8 +30,8 @@ public:
     size_t write(const void *buffer, size_t length);
     void cancelWrite();
 
-    boost::signals2::connection onRemoteClose(
-        const boost::signals2::slot<void ()> &slot);
+    Signal11::ConnectionRef onRemoteClose(
+        const Signal11::Signal<void()>::CallbackFunction &slot);
 
     std::shared_ptr<Socket> socket() { return m_socket; }
 

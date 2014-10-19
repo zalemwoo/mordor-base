@@ -3,13 +3,13 @@
 // Copyright (c) 2009 - Mozy, Inc.
 
 #include <vector>
-
-#include <boost/signals2/signal.hpp>
+#include <map>
 
 #include "util.h"
 #include "endian.h"
 #include "exception.h"
 #include "version.h"
+#include "signal11.h"
 
 #ifdef WINDOWS
 #include <ws2tcpip.h>
@@ -143,8 +143,8 @@ public:
     /// Only triggered for connected stream sockets.  This event is trigerred
     /// out-of-band of any receive operations (i.e. there may still be data on
     /// the socket to be read after this event has been received)
-    boost::signals2::connection onRemoteClose(
-        const boost::signals2::slot<void ()> &slot);
+    Signal11::ConnectionRef onRemoteClose(
+        const Signal11::Signal<void()>::CallbackFunction &slot);
 
 private:
     template <bool isSend>
@@ -181,7 +181,7 @@ private:
 
 #endif
     bool m_isConnected, m_isRegisteredForRemoteClose;
-    boost::signals2::signal<void ()> m_onRemoteClose;
+    Signal11::Signal<void ()> m_onRemoteClose;
 };
 
 #ifdef WINDOWS

@@ -5,6 +5,10 @@
 
 #include <iomanip> // for std::setw
 
+#ifdef POSIX
+#include <cxxabi.h>
+#endif
+
 #ifdef WINDOWS
 #include <dbghelp.h>
 

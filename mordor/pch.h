@@ -96,7 +96,6 @@
 #include <boost/multi_index/ordered_index.hpp>
 #include <boost/multi_index/global_fun.hpp>
 #include <boost/multi_index/member.hpp>
-#include <boost/signals2/signal.hpp>
 #include <boost/variant.hpp>
 
 // Non-CRT C headers

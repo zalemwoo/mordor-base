@@ -4,10 +4,9 @@
 
 #include <string>
 
-#include <boost/signals2/signal.hpp>
-
 #include "mordor/util.h"
 #include "mordor/predef.h"
+#include "mordor/signal11.h"
 
 namespace Mordor {
 
@@ -239,9 +238,9 @@ public:
     /// may still be data to be read after this event has been received)
     /// @note This event is optional, and will return a disconnected connection
     /// if it is not supported.
-    virtual boost::signals2::connection onRemoteClose(
-        const boost::signals2::slot<void ()> &slot)
-    { return boost::signals2::connection(); }
+    virtual Signal11::ConnectionRef onRemoteClose(
+        const Signal11::Signal<void()>::CallbackFunction &slot)
+    { return Signal11::ConnectionRef(); }
 
 protected:
     size_t read(Buffer &buffer, size_t length, bool coalesce);

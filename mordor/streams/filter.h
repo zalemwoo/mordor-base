@@ -54,9 +54,8 @@ public:
     { return m_parent->find(str, sanitySize, throwIfNotFound); }
     void unread(const Buffer &b, size_t len)
     { return m_parent->unread(b, len); }
-
-    boost::signals2::connection onRemoteClose(
-        const boost::signals2::slot<void ()> &slot)
+    Signal11::ConnectionRef onRemoteClose(
+            const Signal11::Signal<void()>::CallbackFunction &slot)
     { return m_parent->onRemoteClose(slot); }
 
 private:
