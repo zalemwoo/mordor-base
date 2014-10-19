@@ -33,9 +33,6 @@
       'MACOSX_DEPLOYMENT_TARGET': '10.8',        # OS X Deployment Target: 10.8
       'CLANG_CXX_LANGUAGE_STANDARD': 'c++11',
       'CLANG_CXX_LIBRARY': 'libc++',             # libc++ requires OS X 10.7 or later
-      'OTHER_LDFLAGS': [
-        '-Wl,-force_load,<(PRODUCT_DIR)/libopenssl.a',
-       ],
     },
     'conditions': [
       ['OS == "mac"',{
@@ -236,6 +233,9 @@
       'xcode_settings': {
         'GCC_ENABLE_CPP_EXCEPTIONS': 'YES',        # -fno-exceptions
         'GCC_ENABLE_CPP_RTTI': 'YES',              # -fno-rtti
+        'OTHER_LDFLAGS': [
+          '-Wl,-force_load,<(PRODUCT_DIR)/libopenssl.a',
+        ],
       },
     }, # tests
     {
@@ -252,6 +252,9 @@
       'xcode_settings': {
         'GCC_ENABLE_CPP_EXCEPTIONS': 'YES',        # -fno-exceptions
         'GCC_ENABLE_CPP_RTTI': 'YES',              # -fno-rtti
+        'OTHER_LDFLAGS': [
+          '-Wl,-force_load,<(PRODUCT_DIR)/libopenssl.a',
+        ],
       },
     }, # cat
   ] # targets

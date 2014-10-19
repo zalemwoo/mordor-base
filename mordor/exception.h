@@ -35,6 +35,25 @@ std::string dump_backtrace();
 std::string to_string( const std::vector<void *> bt );
 std::vector<void *> backtrace(int framesToSkip = 0);
 
+#ifdef WINDOWS
+// error_t is a struct so that operator <<(ostream, error_t) is not ambiguous
+struct error_t
+{
+    error_t(DWORD v = 0u) : value(v) {}
+    operator DWORD() const { return value; }
+
+    DWORD value;
+};
+#else
+struct error_t
+{
+    error_t(int v = 0) : value(v) {}
+    operator int() const { return value; }
+
+    int value;
+};
+#endif
+
 struct ErrorInfoBase : virtual std::exception
 {
 };
@@ -45,8 +64,6 @@ struct ErrorInfo : public ErrorInfoBase
     typedef  Exception exception_type;
     ErrorInfo(Exception const & exception, const char* file, int line, const char* func)
             : exception_(exception), file_(file), line_(line), func_(func), error_(0){};
-
-    virtual ~ErrorInfo(){}
 
     void setError(error_t const & error) {
         error_ = error;
@@ -109,25 +126,6 @@ struct WriteBeyondEofException : virtual StreamException {};
 struct BufferOverflowException : virtual StreamException {};
 
 struct NativeException : virtual Exception {};
-
-#ifdef WINDOWS
-// error_t is a struct so that operator <<(ostream, error_t) is not ambiguous
-struct error_t
-{
-    error_t(DWORD v = 0u) : value(v) {}
-    operator DWORD() { return value; }
-
-    DWORD value;
-};
-#else
-struct error_t
-{
-    error_t(int v = 0) : value(v) {}
-    operator int() { return value; }
-
-    int value;
-};
-#endif
 
 struct OperationNotSupportedException : virtual NativeException {};
 struct FileNotFoundException : virtual NativeException {};

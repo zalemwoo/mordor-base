@@ -64,7 +64,7 @@ namespace Signal11{
         /// CollectorInvocation specialisation for regular signals.
         template<class Collector, class R, class... Args>
         class CollectorInvocation<Collector, R (Args...)> {
-        public:
+          public:
             inline bool invoke(Collector &collector, const std::function<R (Args...)> &callback, Args... args) {
                 return collector(callback(args...));
             }
@@ -72,7 +72,8 @@ namespace Signal11{
 
         /// CollectorInvocation specialisation for signals with void return type.
         template<class Collector, class... Args>
-        struct CollectorInvocation<Collector, void (Args...)> {
+        class CollectorInvocation<Collector, void (Args...)> {
+					public:
             inline bool invoke(Collector &collector, const std::function<void (Args...)> &callback, Args... args) {
                 callback(args...);
                 return collector();
