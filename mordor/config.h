@@ -142,6 +142,18 @@ private:
     bool m_lockable;
 };
 
+template <typename T>
+static inline std::string toStringFromNative(const T& val)
+{
+    return std::to_string(val);
+}
+
+template <>
+inline std::string toStringFromNative<std::string>(const std::string& val)
+{
+    return val;
+}
+
 template <class T>
 bool isConfigNotLocked(const T &);
 
@@ -182,9 +194,7 @@ public:
 
     std::string toString() const
     {
-        std::ostringstream oss;
-        oss << m_val;
-        return oss.str();
+        return toStringFromNative(m_val);
     }
 
     bool fromString(const std::string& str)
