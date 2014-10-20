@@ -174,6 +174,17 @@ void throwExceptionFromLastError(error_t lastError, const char* file, int line, 
         }                                                                        \
     }while(0)
 
+
+#define MORDOR_THROW_EXCEPTION_WITH_ERROR_API(x, api)                       \
+    do{                                                                             \
+        try{                                                                     \
+            MORDOR_THROW_EXCEPTION_WITH_ERROR(x);                            \
+        }catch(...){                                        \
+            std::cerr << std::endl << "==> Exception API( " << api << " ) <==\n";        \
+            throw;                                                              \
+        }                                                                        \
+    }while(0)
+
 } // namespace Mordor
 
 extern template struct Mordor::ErrorInfo<std::runtime_error>;

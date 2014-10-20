@@ -3,6 +3,22 @@
 
 namespace Mordor{
 
+namespace Internal{
+template <typename T> static inline T fromString(const std::string& str);
+template <typename T> struct StringNativeConvBase;
+}
+
+template <typename T, template <typename> class Base = Internal::StringNativeConvBase>
+struct StringNativeConv : public Base<T>
+{
+    using Base<T>::toString;
+    static inline T fromString(const std::string& str) throw(std::invalid_argument){
+        return Internal::fromString<T>(str);
+    }
+};
+
+namespace Internal{
+
 template <typename T>
 static inline T fromString(const std::string& str){
     throw std::invalid_argument(str);
@@ -82,14 +98,7 @@ struct StringNativeConvBase<bool>
     }
 };
 
-template <typename T, template <typename> class Base = StringNativeConvBase>
-struct StringNativeConv : public Base<T>
-{
-    using Base<T>::toString;
-    static inline T fromString(const std::string& str){
-        return Mordor::fromString<T>(str);
-    }
-};
+} // namespace Internal
 
 } // namespace Mordor
 

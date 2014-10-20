@@ -410,7 +410,9 @@ namespace Signal11{
     namespace Lib {
         /// ProtoSignal template specialised for the callback signature and collector.
         template<class Collector, class R, class... Args>
-        class ProtoSignal<R (Args...), Collector> : private CollectorInvocation<Collector, R (Args...)> {
+        class ProtoSignal<R (Args...), Collector> : private CollectorInvocation<Collector, R (Args...)> ,
+                                                       private Mordor::noncopyable
+        {
         protected:
             typedef std::function<R (Args...)> CallbackFunction;
             typedef typename CallbackFunction::result_type Result;
@@ -522,8 +524,8 @@ namespace Signal11{
                 }
             }
 
-            ProtoSignal (const ProtoSignal&) {}
-            ProtoSignal& operator=(const ProtoSignal&) {}
+            ProtoSignal (const ProtoSignal&) = delete;
+            ProtoSignal& operator=(const ProtoSignal&) = delete;
 
         public:
             /// ProtoSignal constructor, connects default callback if non-NULL.

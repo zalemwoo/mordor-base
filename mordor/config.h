@@ -185,7 +185,7 @@ public:
         T oldVal = m_val;
         if (oldVal != v) {
             std::vector<bool> results = beforeChange.emit(v);
-            for (std::vector<bool>::iterator it = results.begin() ; it != results.end(); ++it){
+            for (auto it = results.begin() ; it != results.end(); ++it){
                 if(!*it) return false;
             }
             m_val = v;
