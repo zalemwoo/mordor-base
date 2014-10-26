@@ -82,8 +82,9 @@ public:
             std::lock_guard<std::mutex> lock(m_mutex);
             tickleMe = scheduleNoLock(fd, thread);
         }
-        if (shouldTickle(tickleMe))
+        if (shouldTickle(tickleMe)){
             tickle();
+        }
     }
 
     /// Schedule multiple items to be executed at once
@@ -101,8 +102,10 @@ public:
                 ++begin;
             }
         }
-        if (shouldTickle(tickleMe))
+
+        if (shouldTickle(tickleMe)){
             tickle();
+        }
     }
 
     /// Change the currently executing Fiber to be running on this Scheduler
@@ -172,7 +175,9 @@ protected:
     virtual void tickle() = 0;
 
     bool hasWorkToDo();
-    virtual bool hasIdleThreads() const { return m_idleThreadCount != 0; }
+    virtual bool hasIdleThreads() const {
+        return m_idleThreadCount != 0;
+    }
 
     /// determine whether tickle() is needed, to be invoked in schedule()
     /// @param empty whether m_fibers is empty before the new task is scheduled

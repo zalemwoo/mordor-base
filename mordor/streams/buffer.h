@@ -4,6 +4,8 @@
 #include <list>
 #include <vector>
 
+#include <stddef.h>
+
 #include "mordor/socket.h"
 
 namespace Mordor {

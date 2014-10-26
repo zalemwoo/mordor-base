@@ -272,11 +272,13 @@ FiberCondition::wait()
     {
         std::lock_guard<std::mutex> lock(m_mutex);
         std::lock_guard<std::mutex> lock2(m_fiberMutex.m_mutex);
+
         MORDOR_ASSERT(m_fiberMutex.m_owner == Fiber::getThis());
         m_waiters.push_back(std::make_pair(Scheduler::getThis(),
             Fiber::getThis()));
         m_fiberMutex.unlockNoLock();
     }
+
     Scheduler::yieldTo();
 #ifndef NDEBUG
     std::lock_guard<std::mutex> lock2(m_fiberMutex.m_mutex);
@@ -312,6 +314,7 @@ void
 FiberCondition::broadcast()
 {
     std::lock_guard<std::mutex> lock(m_mutex);
+
     if (m_waiters.empty())
         return;
     std::lock_guard<std::mutex> lock2(m_fiberMutex.m_mutex);

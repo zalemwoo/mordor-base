@@ -265,15 +265,12 @@ Scheduler::run()
                     --m_activeThreadCount;
                 // Kill off the idle fiber
                 try {
-                    throw new OperationAbortedException();
+                    throw OperationAbortedException();
                 } catch(...) {
                     idleFiber->inject(std::current_exception());
                 }
                 // Detach our thread
-                for (std::vector<std::shared_ptr<Thread> >
-                    ::iterator it = m_threads.begin();
-                    it != m_threads.end();
-                    ++it)
+                for (auto it = m_threads.begin(); it != m_threads.end(); ++it)
                     if ((*it)->tid() == gettid()) {
                         m_threads.erase(it);
                         if (m_threads.size() > m_threadCount)
@@ -372,7 +369,7 @@ Scheduler::run()
                         dgFiber->reset(dg);
                     else
                         dgFiber.reset(new Fiber(dg));
-                    // MORDOR_LOG_DEBUG(g_log) << this << " running " << dg; // Z
+                    MORDOR_LOG_DEBUG(g_log) << this << " running " << "dg";
                     dg = NULL;
                     dgFiber->yieldTo();
                     if (dgFiber->state() != Fiber::TERM)
