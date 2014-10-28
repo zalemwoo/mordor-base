@@ -65,4 +65,32 @@
 #   endif
 #endif
 
+#ifndef PLATFORM
+#if defined(WINDOWS)
+    #define PLATFORM "windows"
+#elif defined(CYGWIN)
+    #define PLATFORM "cygwin"
+#elif defined(LINUX)
+    #define PLATFORM "linux"
+#elif defined(OSX)
+    #define PLATFORM "osx"
+#elif defined(FREEBSD)
+    #define PLATFORM "freebsd"
+#else
+    #define PLATFORM "unknown"
 #endif
+#endif // PLATFORM
+
+#ifndef ARCH
+#if defined(X86_64)
+    #define ARCH "x64"
+#elif defined(X86)
+    #define ARCH "x86"
+#elif defined(ARM)
+    #define ARCH "arm"
+#else
+    #define ARCH "unknown"
+#endif
+#endif // ARCH
+
+#endif //  __MORDOR_VERSION_H__
