@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <limits>
 
+#include <stdio.h>
+#include <limits.h>
 #include <sys/fcntl.h>
 #include <sys/stat.h>
 #include <sys/uio.h>

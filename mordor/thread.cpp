@@ -6,6 +6,7 @@
 #include "thread.h"
 
 #ifdef LINUX
+#include <unistd.h>
 #include <sys/prctl.h>
 #include <syscall.h>
 #elif defined(WINDOWS)

@@ -1,6 +1,6 @@
 // Copyright (c) 2009 - Mozy, Inc.
 
-#include "socket_stream.h"
+#include "socket.h"
 
 #include "buffer.h"
 #include "mordor/assert.h"

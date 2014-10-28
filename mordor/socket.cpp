@@ -19,10 +19,12 @@
 #pragma comment(lib, "mswsock")
 #pragma comment(lib, "iphlpapi")
 #else
+#include <limits.h>
 #include <arpa/inet.h>
 #include <fcntl.h>
 #include <ifaddrs.h>
 #include <netdb.h>
+#include <unistd.h>
 #define closesocket close
 #endif
 

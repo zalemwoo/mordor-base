@@ -94,6 +94,7 @@
 // Non-STL C++ headers
 
 // Non-CRT C headers
+#if 0
 #include <openssl/aes.h>
 #include <openssl/bio.h>
 #include <openssl/blowfish.h>
@@ -102,6 +103,7 @@
 #include <openssl/sha.h>
 #include <openssl/ssl.h>
 #include <zlib.h>
+#endif
 
 #if defined(VALGRIND) && (defined(LINUX) || defined (OSX))
 #include <valgrind/valgrind.h>

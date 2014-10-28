@@ -480,7 +480,7 @@ static void doSleeping(std::mutex &mutex, int &count, int &reference, int &max, 
     --reference;
 }
 
-#if 0 // Zs
+#if 1 // Zs
 MORDOR_UNITTEST(Scheduler, parallelDoParallelism)
 {
     IOManager ioManager(6, true);

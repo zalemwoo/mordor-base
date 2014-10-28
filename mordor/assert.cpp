@@ -5,6 +5,7 @@
 #include "version.h"
 
 #ifdef LINUX
+#include <unistd.h>
 #include <fcntl.h>
 #elif defined(OSX)
 #include <sys/sysctl.h>

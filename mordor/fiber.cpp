@@ -10,9 +10,9 @@
 
 #ifdef WINDOWS
 #include <windows.h>
-
 #include "runtime_linking.h"
 #else
+#include <unistd.h>
 #include <sys/mman.h>
 #include <pthread.h>
 #endif

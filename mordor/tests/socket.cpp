@@ -1,7 +1,7 @@
 // Copyright (c) 2009 - Mozy, Inc.
 
 #include <iostream>
-
+#include <limits.h>
 // #include <boost/lexical_cast.hpp>
 
 #include "mordor/exception.h"
